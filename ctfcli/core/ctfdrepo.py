@@ -86,6 +86,20 @@ class SandboxyCTFdRepository():
     def _processcategory(self,category:Category)-> Category:
         '''
         Itterates over a Category folder to add challenges to the database
+
+        IF challenge is a "deployed" challenge, it will create a node in
+        the cluster designated in the configuration file or as given on 
+        the command line when the masterlist is created on "first run"
+        during the initial file scan
+            "category": category,
+            "type":challengetype, # "deployment" or "challenge"
+            "yaml":yamlcontents,
+            "folderdata" : {
+                "deployment": "",
+                "service":"",
+                "handout":handout, 
+                "solution": solution
+            }
         '''     
         #get subfolder names in category directory
         #categoryfolder = getsubdirs(newcategory.location)
@@ -98,6 +112,7 @@ class SandboxyCTFdRepository():
             try:
                 # load yaml and scan folder
                 folderscanresults = self._processfoldercontents(challengefolderpath)#,category)
+                if "deployment" in folderscanresults["type"]:
                 # create Challenge based off those
                 newchallenge = self._createchallenge(folderscanresults)
 
@@ -126,6 +141,7 @@ class SandboxyCTFdRepository():
 
         >>>    folderscanresults = {
         >>>        "category": category,
+        >>>         "type":challengetype,
         >>>        "yaml":yamlcontents,
         >>>        "folderdata" : {
         >>>            "handout":handout, 
@@ -157,7 +173,7 @@ class SandboxyCTFdRepository():
                         #"handout",
                         "solution",
                         "deployment",
-                        #"Dockerfile",
+                        "Dockerfile",
                         "challenge.yaml",
                         #"README"
                         ]
@@ -216,6 +232,9 @@ class SandboxyCTFdRepository():
                     # yes its repeating code
                     # yes there is a better way
                 # its a regular challenge
+        #====================================================================
+        #  NON-DEPLOYMENT PROCESSING
+        #====================================================================
                     if kwargs.get("deployment") is None:
                         challengetype = "challenge"
                         debuggreen("[+] Standard Challenge processing")
@@ -226,11 +245,15 @@ class SandboxyCTFdRepository():
                         # pack up handout   
                         handout  = _processfoldertotarfile(folder = kwargs.pop('solution'), 
                                                             filename = 'handout.tar.gz')
-                # if the deployment folder exists
+        #====================================================================
+        #   DEPLOYMENT PROCESSING
+        #====================================================================
+                        # if the deployment folder exists
                     elif kwargs.get("deployment") is not None:
                         challengetype = "deployment"
                         debuggreen("[+] Deployment Challenge Processing")
-                        # handout is not necessary
+
+                        # handout is not necessary, but suggested
                         if kwargs.get("solution") is not None:
                             debuggreen("[+] Deployment solution folder compressing to tarfile")
                             try:
@@ -250,13 +273,14 @@ class SandboxyCTFdRepository():
                                                                filename = 'handout.tar.gz')
                         else:
                             yellowboldprint("[?] No handout material given in deployed challenge, presuming blackbox testing?")
+                        
                     # start the linter
                     linter = Linter()
                     # pick out the challenge yaml
                     # instance a Yaml class
                     challengeyaml = Yaml().loadyaml(kwargs.pop("challenge"))
                     # lint the challenge
-                    #shitty hack to get thins flowing properly
+                    #TODO:shitty hack to get thins flowing properly
                     # when everything is modified finally this can get removed
                     # so far, the category folder has been the category name... but what if 
                     # they are just tossing the wrong challenge in the wrong category?
@@ -275,7 +299,7 @@ class SandboxyCTFdRepository():
                         "type":challengetype,
                         "yaml":yamlcontents,
                         "folderdata" : {
-                            "deployment": "",
+                            "deployment": dockerfile,
                             "service":"",
                             "handout":handout, 
                             "solution": solution
@@ -286,7 +310,7 @@ class SandboxyCTFdRepository():
                 except Exception:
                     errorlogger("[-] ERROR: _processfoldercontents() Encountered an Exception, Please check the log file")
 
-    def _createdeployment(self, folderdata:dict, yamlcontents:dict) -> Challenge:
+    def _createdeployment(self, folderdata:dict, yamlcontents:dict) -> Deployment:
         """
         Creates a DeploymentChallenge() from a challenge folder containing a dockerfile 
         or a kubernetes spec

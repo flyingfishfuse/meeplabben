@@ -18,7 +18,7 @@ if platform.system == "Windows" or "Darwin":
 
 # env vars should be set but check them anyways
 
-class Cluster_Handler():
+class ClusterHandler():
 	def __init__(self,
 				 tools_folder:Path,
 				 challenge_repo:Path,
@@ -41,6 +41,9 @@ class Cluster_Handler():
 		self.cluster_type = cluster_type
 		# default is project name
 		self.cluster_name = cluster_name
+
+		# namespace?
+		self.CHALLENGE_NAMESPACE = "meeplabben"
 		# config is member of class for scope
 		self.config = config.load_kube_config()
 		# docker client
@@ -170,7 +173,7 @@ class Cluster_Handler():
 				raise Exception("Could not configure kubernetes python client")
 
 		k8s_api = client.CoreV1Api()
-		infolog("Getting k8s nodes...")
+		infolog("[+] Getting k8s nodes...")
 		response = k8s_api.list_node()
 		if exclude_node_label_key is not None:
 			nodes = []
@@ -191,19 +194,10 @@ class Cluster_Handler():
 			dep = yaml.safe_load(f)
 			k8s_apps_v1 = client.AppsV1Api()
 			resp = k8s_apps_v1.create_namespaced_deployment(
-				body=dep, namespace="default")
+				body=dep, 
+				namespace=self.CHALLENGE_NAMESPACE)
 			print("Deployment created. status='%s'" % resp.metadata.name)
 
-
-	def has_cluster_config(self):
-		'''
-		if cluster config exists
-		'''
-
-	def require_cluster_config(self):
-		"""
-		"""
-		pass
 
 	def require_active_challenge(self):
 		'''
@@ -228,9 +222,14 @@ class Cluster_Handler():
 		}
 		'''
 
-	def build_images(self):
+	def build_images(self,set_of_images:dict):
 		'''
 		Builds a SET of images
+
+		Feed it a dict of:
+			{
+				container_name:str : container_folder:Path
+			}
 		'''
 		
 	def push_image(self, image_name:str,image_id:str,challenge_name:str,cluster_type:str="kind"):
@@ -246,59 +245,44 @@ class Cluster_Handler():
 				_k	ctf_log "Image pushed to \"${IMAGE_URL}\""
 		} 
 		'''
-		match cluster_type:
-			case "gce":
-				redprint("[-] how the heck? This shouldnt be happening")
-				pass
-				#image_url = f"{self.registry}/{self.project}/{challenge_name}-{image_name}:{image_id}"
-			case "kind":
-				image_url=f"kind/${image_name}:${image_id}"
-				command = self.tools_folder + '/kind" load docker-image --name "${CLUSTER_NAME}" "${IMAGE_URL}"'
-				os.popen(command)
+		try:
+			match cluster_type:
+				case "gce":
+					redprint("[-] how the heck? This shouldnt be happening, GCE costs money.")
+					raise Exception
+					#image_url = f"{self.registry}/{self.project}/{challenge_name}-{image_name}:{image_id}"
+				case "kind":
+					image_url=f"kind/${image_name}:${image_id}"
+					command = Path(self.tools_folder,"kind") + f'load docker-image --name "{self.cluster_name}" "{image_url}"'
+					try:
+						os.popen(command)
+					except:
+						errorlogger(f"[-] Failed to run kind command \n \t {command}")
+		except:
+			errorlogger("[-] Failed to push image to deployed cluster")
 
-	def push_images(self):
-		'''function push_images {
-			push_image "challenge" "${CHALLENGE_IMAGE_LOCAL}" || return
-			CHALLENGE_IMAGE_REMOTE="${IMAGE_URL}"
-			if healthcheck_enabled; then
-				push_image "healthcheck" "${HEALTHCHECK_IMAGE_LOCAL}" || return
-				HEALTHCHECK_IMAGE_REMOTE="${IMAGE_URL}"
-			fi
-		}
-		'''
 	def  kctf_chal_start(self):
-		'''function kctf_chal_start {
-			require_cluster_config
-			COMMAND="start" DESCRIPTION="Deploy the challenge to the cluster." parse_help_arg_only $@ || return
-			build_images || return
-			push_images || return
-
-		# update challenge.yaml with the image urls
-			"${KCTF_BIN}/yq" eval "select(.kind == \"Challenge\") | .spec.image = \"${CHALLENGE_IMAGE_REMOTE}\", select(.kind == \"Challenge\" | not)" --inplace "${CHALLENGE_DIR}/challenge.yaml"
-			if healthcheck_enabled; then
-				"${KCTF_BIN}/yq" eval "select(.kind == \"Challenge\") | .spec.healthcheck.image = \"${HEALTHCHECK_IMAGE_REMOTE}\", select(.kind == \"Challenge\" | not)" --inplace "${CHALLENGE_DIR}/challenge.yaml"
-			fi
-
-			"${KCTF_BIN}/kubectl" apply -f "${CHALLENGE_DIR}/challenge.yaml" || return
-		}
+		'''
 		'''
 	def kctf_chal_stop(self):
-		'''function kctf_chal_stop {
-			require_cluster_config
-			COMMAND="stop" DESCRIPTION="Stop a challenge running on the cluster." parse_help_arg_only $@ || return
-			"${KCTF_BIN}/kubectl" delete -f "${CHALLENGE_DIR}/challenge.yaml" || return
-		}
+		'''
 		'''
 
-	def debug_port_forward(self,remote_port:str="1337",local_port:str=""):
+	def port_forward(self,challenge_name:str,remote_port:str="1337",local_port:str=""):
 		'''
 		Sets Port forwarding for the challenge
 		'''
-
-		self.require_active_challenge()
+		#self.require_active_challenge()
 
 		yellowboldprint(f'[+] Starting port-forward from {remote_port} to {local_port}')
-		"${KCTF_BIN}/kubectl" port-forward "deployment/${CHALLENGE_NAME}" --namespace "${CHALLENGE_NAMESPACE}" --address=127.0.0.1 "${LOCAL_PORT}:${REMOTE_PORT}"
+		try:
+			command = Path(self.tools_folder,"kubectl") + f'port-forward "deployment/${challenge_name}" --namespace "${self.CHALLENGE_NAMESPACE}" --address=127.0.0.1 "{local_port}:{remote_port}""'
+			try:
+				os.popen(command)
+			except:
+				errorlogger(f"[-] Failed to run kubectl command \n \t {command}")
+		except:
+			errorlogger("[-] Failed to forward ports to deployed node")
 
 	'''
 	function kctf_chal_debug_docker {

@@ -1,24 +1,4 @@
-#!/bin/bash
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
-source "${KCTF_BIN}/kctf-log"
-
-BYE_MSG=""
-KCTF_CLOUD_BASE_URL="https://kctf-cloud.appspot.com/v1"
-# owned by kctf-cloud
-KCTF_CLOUD_API_KEY="AIzaSyC7Jgu4e0IygmImZNPmJHrcfZ3lJA9ZrZs"
 
 function update_gcloud_config {
   _kctf_log "Updating gcloud config."
@@ -33,68 +13,18 @@ function update_gcloud_config {
   gcloud config set container/cluster "${CLUSTER_NAME}" >/dev/null || return
 }
 
-function set_lastconfig_link {
-  ln -sf "${CONFIG_NAME}" "${KCTF_CTF_DIR}/kctf/config/.lastconfig"
-}
 
-function kctf_cluster_load_usage {
-  echo "usage: kctf cluster load config_name" >&2
-  echo "  run \"kctf cluster list\" to see a list of options" >&2
-}
 
 function kctf_cluster_load {
-  if [[ $# -ne 1 ]]; then
-    _kctf_log_err "missing config name"
-    kctf_cluster_load_usage
-    return 1
-  fi
-
-  if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
-    kctf_cluster_load_usage
-    return 0
-  fi
-
   CONFIG_NAME="$1"
-  if [[ "${CONFIG_NAME}" == ".lastconfig" ]]; then
-    CONFIG_NAME=$(readlink "${KCTF_CTF_DIR}/kctf/config/.lastconfig")
-    if [[ $? -ne 0 ]]; then
-      _kctf_log_err "could not resolve .lastconfig link"
-      return 1
-    fi
-  fi
   CONFIG_PATH="${KCTF_CTF_DIR}/kctf/config/${CONFIG_NAME}"
-  shift
 
   source "${CONFIG_PATH}" || return
 
-  case "${CLUSTER_TYPE}" in
-    gce)
-      if ! command -v gcloud >/dev/null 2>&1; then
-        _kctf_log_err "gcloud not installed"
-        return 1
-      fi
-      update_gcloud_config || return
-
-      # try to fetch the creds of the k8s cluster
-      gcloud container clusters get-credentials "${CLUSTER_NAME}" >/dev/null 2>/dev/null
-      ;;
-    kind)
-      kube_config=$("${KCTF_BIN}/kind" get kubeconfig --name "${CLUSTER_NAME}" 2>/dev/null)
-      if [[ $? -eq 0 ]]; then
-        echo "${kube_config}" > "${KUBECONFIG}"
-      fi
-      ;;
-    *)
-      _kctf_log_err "unknown cluster type \"${CLUSTER_TYPE}\""
-      return 1
-      ;;
-  esac
-
-  _kctf_log "loaded config"
-
-  set_lastconfig_link
-
-  echo "${CONFIG_NAME}"
+  kube_config=$("${KCTF_BIN}/kind" get kubeconfig --name "${CLUSTER_NAME}" 2>/dev/null)
+  if [[ $? -eq 0 ]]; then
+    echo "${kube_config}" > "${KUBECONFIG}"
+  fi
 }
 
 function kctf_cluster_list {

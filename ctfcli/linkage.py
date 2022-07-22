@@ -7,6 +7,8 @@ from ctfcli.core.apisession import APIHandler
 from ctfcli.core.gitrepo import SandboxyGitRepository
 from ctfcli.utils.utils import redprint,greenprint, errorlogger
 from ctfcli.utils.config import Config
+
+from ctfcli.PyKCTF.kctf import ClusterHandler
 #import configparser
 
 class SandBoxyCTFdLinkage():
@@ -34,6 +36,27 @@ class SandBoxyCTFdLinkage():
         self.config = Config
         #self.config = configparser.ConfigParser
         #self.config = Config(configfilelocation)
+        try:
+            self.init_cluster()
+        except:
+            errorlogger("[-] Cluster Initialization FAILED! Exiting program!")
+            sys.exit()
+
+    def init_cluster(self):
+        '''
+        starts a cluster with docker, defaults to "Kind"
+        '''
+        self.cluster = ClusterHandler(self.tools_folder,self._challengesfolder)
+        # check for kind binary and download if necessary
+        self.cluster.ensure_kind()
+        # check for kubectl binary and download if necessary
+        self.cluster.ensure_kubectl()
+        
+    def handle_cluster(self,cluster_object:ClusterHandler):
+        '''
+        Handles the cluster manager class
+        '''
+        self.cluster_instance = cluster_object
 
     def _checkmasterlist(self):
         """

@@ -82,7 +82,7 @@ class Repository(Repo):
             # return the object list itself
             return catbag
     
-    def getchallengesbycategory(self,categoryname,printscr=True) -> list:
+    def getchallengesbycategory(self,categoryname,printscr=True) -> list[Challenge]:
         """
         Returns either a list of challenges or prints them to screen
         """
@@ -95,9 +95,10 @@ class Repository(Repo):
             for challenge in challengesack:
                 print(challenge)
         else:
+            # return a list of challenges
             return challengesack
 
-    def getallchallenges(self, printscr=True) -> list:
+    def getallchallenges(self, printscr=True) -> list[Challenge]:
         """
         Lists ALL challenges in repo
         Supply "print=False" to return a variable instead of text 

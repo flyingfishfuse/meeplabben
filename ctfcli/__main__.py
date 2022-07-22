@@ -6,7 +6,7 @@ from ctfcli.utils.utils import errorlogger, yellowboldprint,greenprint,redprint
 from ctfcli.utils.config import Config
 from ctfcli.linkage import SandBoxyCTFdLinkage
 from ctfcli.core.gitrepo import SandboxyGitRepository
-from ctfcli.PyKCTF.kctf import Cluster_Handler
+from ctfcli.PyKCTF.kctf import ClusterHandler
 ###############################################################################
 from ctfcli.utils.utils import DEBUG
 ###############################################################################
@@ -94,15 +94,6 @@ class Ctfcli():
         except Exception:
             errorlogger("[-] Git Repository Creation Failed, check the logfile")
 
-    def init_cluster(self):
-        '''
-        starts a cluster with docker, defaults to "Kind"
-        '''
-        self.cluster = Cluster_Handler(self.tools_folder,self._challengesfolder)
-        # check for kind binary and download if necessary
-        self.cluster.ensure_kind()
-        # check for kubectl binary and download if necessary
-        self.cluster.ensure_kubectl()
 
     def _setenv(self):
         """
