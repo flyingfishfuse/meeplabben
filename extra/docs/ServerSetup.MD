@@ -1,0 +1,103 @@
+# dev server
+    K:\vms
+    λ set PATH=%PATH%;"C:\Program Files\Oracle\VirtualBox"
+
+    K:\vms
+    λ VBoxManage modifyvm parrotOS --nested-hw-virt on
+
+    Type the following command into the Command Prompt window, replacing # with the number of the disk you found above, and press Enter.
+
+    VBoxManage internalcommands createrawvmdk -filename C:\usb.vmdk -rawdisk \\.\PhysicalDrive#
+
+    You can replace C:\usb.vmdk with any file path you want. This command creates a virtual machine disk (VMDK) file that points to the physical drive you select. When you load the VMDK file as a drive in VirtualBox, VirtualBox will actually access the physical device.
+
+# FIRST TIME SERVER SETUP
+
+## Harden SSH
+
+    make sure the following items are uncommented and present in the file 
+        
+        - /etc/ssh/sshd_config
+            Protocol2
+            IgnoreRhosts to yes
+            HostbasedAuthentication no
+            PermitEmptyPasswords no
+            X11Forwarding no
+            MaxAuthTries 5
+            Ciphers aes128-ctr,aes192-ctr,aes256-ctr
+            ClientAliveInterval 900
+            ClientAliveCountMax 0
+            UsePAM yes
+
+## install and configure snort
+
+    TODO
+
+
+## Setup FQDN in Linux (debian Buster)
+    
+    Change hostname to suit your desired naming schema and acquire a 
+    Domain name for your IP address
+        
+        root@server #> hostnamectl set-hostname fightbiscuits
+
+    add FQDN to your hostname in /etc/hosts file.
+        root@server #> cat /etc/hosts
+        10.10.2.32 fightbiscuits.firewall-gateway.net
+ 
+    To confirm your FQDN, run below command :
+        root@server12 # hostname -f
+        fightbiscuits.firewall-gateway.net
+
+    Add domain in /etc/resolv.conf. This file used for setting nameservers as well.
+        root@server12 # cat /etc/resolv.conf
+        search kerneltalks.com
+
+    Confirm that changes are working perfectly. Question is how to check the domain name of the Linux server?
+
+        root@server#> hostname
+        server12
+
+        root@server#> hostname -f
+        server12.kerneltalks.com
+
+        root@server#> dnsdomainname
+        kerneltalks.com
+
+# NGINX SETUP
+
+    https://dev.to/danielkun/nginx-everything-about-proxypass-2ona
+
+# CERTBOT SETUP
+    
+    Run these commands before "docker-compose -f main-compose.yaml up"
+
+    While down, to run only the nginx service
+        docker-compose -f main-compose.yaml run --rm -v $(pwd)/data/certbot/conf:/etc/letsencrypt -v $(pwd)/data/certbot/www:/var/www/certbot -v $(pwd)/data/log/cert:/var/log/letsencrypt nginx /bin/sh 
+    
+    Then :
+        certbot --nginx --noninteractive --agree-tos --register-unsafely-without-email -d fightbiscuits.firewall-gateway.net
+    
+    OR, If the project is already running, run the command:
+        docker exec -it sandboxy_nginx_1 /bin/sh 
+
+    Then, run the command:
+        certbot --nginx --noninteractive --agree-tos --register-unsafely-without-email -d fightbiscuits.firewall-gateway.net
+
+    Open the crontab file.
+        crontab -e
+
+    Add the certbot command to run daily. In this example, we run the command every day at noon. The command checks to see if the certificate on the server will expire within the next 30 days, and renews it if so. The --quiet directive tells certbot not to generate output.
+
+        0 12 * * * /usr/bin/certbot renew --quiet
+
+
+# Docker configuration
+
+    docker network create --gateway=192.168.0.1 --subnet=192.168.0.0/24 net
+
+
+#https://linuxize.com/post/how-to-setup-a-firewall-with-ufw-on-debian-10/
+#https://www.calcomsoftware.com/your-first-5-steps-in-linux-server-hardening/
+#https://www.the-art-of-web.com/system/fail2ban/
+#https://github.com/trimstray/linux-hardening-checklist

@@ -1,0 +1,6 @@
+CTFd/logs/*
+ctf*
+redis/*
+mysql/*
+gitlab/*
+

@@ -1,0 +1,230 @@
+version: "3"
+#################################################################
+##
+## THIS FILE CONTAINS THE ENTRIES FOR THE INFRASTRUCTURE
+# To create the network you run the following:
+## docker network create net --gateway 192.168.0.1 --subnet 192.168.0.1/24
+##    ALSO: --gateway --ip-range and --aux-address can be used
+# https://docs.docker.com/engine/reference/commandline/network_create/
+#################################################################
+services:
+#################################################################
+## NGINX ; proxies to the other containers
+# STATUS : SEMI-FUNCTIONAL
+# ISSUE  : cannot rewrite url properly without ssl for development
+# SUPPOSED CAUSE: I'm not mounting volumes, I'm trying to avoid that
+# proposed solution:
+#   I am going to host a domain name on the server for 
+#   certbot testing
+#
+# PROGRESS: - url rewriting working as expected with new config
+#           - I seem to have some sort of local SSL issue?
+#             PR_END_OF_FILE and {forgot, give me moment}
+#################################################################        
+    nginx:
+      build:
+        context: ./containers/nginx
+        dockerfile: Dockerfile
+      image: nginx:latest
+      hostname: nginx
+      depends_on:
+      #  - juiceshop
+#        - dvwa
+        - ctfd
+      restart: unless-stopped
+      env_file:
+        - ./.env
+      volumes:
+        - ${CERTBOTCONFVOLUMES}
+        - ${CERTBOTDATAVOLUMES}
+        - ${CERTBOTLOGVOLUMES}
+      ports:
+        - 80:80
+        - 443:443
+      extra_hosts:
+        - "ctfd:${CTFDIP}"
+      #  - "juiceshop:${JUICESHOPIP}"
+      networks:
+        net:
+          ipv4_address: ${NGINXIP}
+################################################################
+## CERTBOT enables ssl for the backend
+# STATUS : NOT TESTED
+#           trying nginx internal certbot first
+#           seems simpler... two commands
+# PROGRESS: nginx + certbot/internal seems to work ok
+################################################################
+#    certbot:
+#      image: certbot/certbot
+#      hostname: certbot
+#      # checks for certbot renewal every 12 hours
+#      #entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+#      depends_on:
+#        - nginx
+#      volumes:
+#        - ${CERTBOTCONFVOLUMES}
+#        - ${CERTBOTDATAVOLUMES}
+#      
+#      networks:
+#        net:
+#          ipv4_address: ${CERTBOTIP}
+#
+#################################################################
+## CTFD; 
+## will use the builder script portion for production. 
+# STATUS : FUNCTIONAL
+#################################################################        
+    ctfd:
+      image: ctfd/ctfd
+      #build:
+      #  context: ./containers/ctfd
+      #  dockerfile: Dockerfile
+      hostname: ctfd
+      user: root
+      restart: always
+      environment:
+        - UPLOAD_FOLDER=${UPLOAD_FOLDER}
+        - DATABASE_URL=${DATABASE_URL}
+        - REDIS_URL=${REDIS_URL}
+        - WORKERS=${WORKERS}
+        - LOG_FOLDER=${LOG_FOLDER}
+        - ACCESS_LOG=${ACCESS_LOG}
+        - ERROR_LOG=${ERROR_LOG}
+        - REVERSE_PROXY=${REVERSE_PROXY}
+      volumes:
+        - ./data/CTFd/logs:${LOG_FOLDER}
+        - ./data/CTFd/uploads:${UPLOAD_FOLDER}
+      depends_on:
+        - db
+#        - nginx
+      expose:
+        - 8000
+      ports:
+        - ${CTFDPORT}:8000
+      extra_hosts:
+        - "nginx:${NGINXIP}"
+      # I have been trying to avoid this
+      #network_mode: host
+      networks:
+        internal:
+        net:
+          ipv4_address: ${CTFDIP}
+
+#################################################################
+#                   REDIS SERVER
+#################################################################
+    cache:
+      image: redis
+      depends_on:
+        - nginx
+      hostname: cache
+      #command: redis-server --appendonly yes
+      ports:
+        #- ${REDISPORT}:6379
+        - 6379:6379
+      volumes:
+        - ./data/redis:/data
+      restart: unless-stopped
+      networks:
+        internal:
+#################################################################
+#                   MYSQL SERVER
+#################################################################
+    db:
+      image: mariadb:10.4.12
+#      depends_on:
+#        - nginx
+      restart: always
+      environment:
+        - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        - MYSQL_USER=${MYSQL_USER}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
+      # This command is required to set important mariadb defaults
+      command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --wait_timeout=28800, --log-warnings=0]
+      volumes:
+        - ./data/mysql:/var/lib/mysql
+      networks:
+          internal:
+#################################################################
+#     DNS SERVER
+#################################################################   
+
+
+#################################################################
+##  Parrotsec/ParOS
+#################################################################
+    parrot:
+      image: parrotsec/security
+      volumes:
+        - "/run/docker.sock:/var/run/docker.sock"
+        -  /tmp/msf:/tmp/data:Z
+      networks:
+        net:
+          ipv4_address: ${PARROTOSIP}
+      network_mode: host
+
+#################################################################
+## OWASP JUICESHOP  ; will be locked down for semi-private usage
+# STATUS : FUNCTIONAL
+#################################################################
+#docker run --rm -p 3000:3000 bkimminich/juice-shop
+    juiceshop:
+      image: bkimminich/juice-shop
+      hostname: juiceshop
+      depends_on:
+        - nginx
+      expose:
+        - 3000
+      restart: unless-stopped
+      ports:
+        - ${JUICESHOPPORT}:3000
+      networks:
+        net:
+          external: true
+          ipv4_address: ${JUICESHOPIP}
+
+#################################################################
+##  target1 available for pwnage
+################################################################
+    cnc:
+      image: debian:buster
+      build:
+        context: ./containers/cnc
+        dockerfile: Dockerfile
+      networks:
+        hax:
+          external: true
+          ipv4_address: ${DEBIANIP}
+
+#################################################################
+## GITLAB
+# STATUS : UNTESTED , for other stuff, not really part of sandboxy
+# just wanted to test installation
+################################################################# 
+    gitlab:
+      image: 'gitlab/gitlab-ee:latest'
+      restart: always
+      hostname: 'gitlab.example.com'
+      environment:
+        GITLAB_OMNIBUS_CONFIG: |
+          external_url 'https://gitlab.example.com'
+          # Add any other gitlab.rb configuration here, each on its own line
+      ports:
+        - '80:80'
+        - '443:443'
+        - '22:22'
+      volumes:
+        - '$GITLAB_HOME/config:/etc/gitlab'
+        - '$GITLAB_HOME/logs:/var/log/gitlab'
+        - '$GITLAB_HOME/data:/var/opt/gitlab'
+
+#################################################################
+#     NETWORKS SECTION
+#################################################################      
+networks:
+  internal:
+    internal: true
+
+  net:
+    external: true

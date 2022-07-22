@@ -1,0 +1,33 @@
+apiVersion: placeholder
+kind: placeholder
+metadata:
+  labels:
+    app: placeholder
+    tier: placeholder
+  name: placeholder
+spec:
+  replicas: 3
+  template:
+    metadata:
+      annotations:
+        #apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+        apparmor.security.beta.kubernetes.io/defaultProfileName: placeholder
+        #seccomp.security.alpha.kubernetes.io/pod: docker/default
+        seccomp.security.alpha.kubernetes.io/pod: placeholder
+      labels:
+        app: placeholder
+        networkpolicy: placeholder
+        #networkpolicy: allow_egress
+        tier: placeholder
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - env: []
+        image: placeholder
+        name: placeholder
+        ports:
+        - containerPort: 1337
+          protocol: TCP
+        securityContext:
+          allowPrivilegeEscalation: false
+      volumes: []

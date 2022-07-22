@@ -1,0 +1,15 @@
+name: decrypto-2
+author: matir
+flags: 
+  - CTF{but_even_I_couldnt_break_IT}
+description:
+  "[Kerckhoffs's principle](https://en.wikipedia.org/wiki/Kerckhoffs%27s_principle)
+  states that \"A cryptosystem should be secure even if everything about the
+  system, except the key, is public knowledge.\"  So here's our **really**
+  unbreakable cipher."
+tags:
+  - Crypto
+  - python
+version: "0.1"
+type: standard
+value: 500

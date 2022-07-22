@@ -1,0 +1,17 @@
+/data/CTFd/**/*.tar.gz
+/data/CTFd/**/*.gz
+/containers/echo*
+data/mysql/*
+data/CTFd/logs/*
+data/redis/*
+data/CTFd/ctfcli-old/
+data/CTFd/build/
+data/CTFd/source/
+data/CTFd/build/*
+!data/CTFd/build/singlehtml/
+extra/ctf-challenges-master
+extra/ctf-2019-release-master
+extra/ctf-2020-release-master
+.data
+.vs*
+.vscode

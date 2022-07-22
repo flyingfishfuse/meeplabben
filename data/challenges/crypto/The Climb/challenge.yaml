@@ -1,0 +1,19 @@
+name: "The Climb"
+author: "ashikka and AJ1479"
+category: Crypto
+version: "0.1"
+description: We are not lost, we're right here somewhere on this little blue line. Wait, why do I feel like I'm being watched?
+
+flags:
+  - csictf{hillshaveeyes}
+tags:
+  - crypto
+  - java
+  - hill cipher
+
+value: 500
+type: dynamic
+extra:
+  initial: 500
+  decay: 450
+  minimum: 100

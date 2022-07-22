@@ -1,0 +1,16 @@
+version: "0.1"
+name: magic
+author: symmetric
+flags: 'CTF{magical_unicorn_gait}'
+description: 'Much magic, so rainbow, wow!'
+type: standard
+value: 500
+tags:
+  - Forensics
+
+hints:
+    - {
+        content: "take a histogram to find the color",
+        cost: 50
+    }
+    - open with a stego tool!

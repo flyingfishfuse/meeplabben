@@ -1,0 +1,37 @@
+name: "Mein Kampf"
+author: "AJ147"
+category: Crypto
+version: "0.1"
+description: |
+  "We have intercepted the enemy's communications, but unfortunately, some data was corrupted during transmission. Can you recover the message?"
+  M4 
+  UKW $
+  Gamma 2 4 
+  $ 5 9 
+  $ 14 3 
+  $ 5 20 
+  fv cd hu ik es op yl wq jm
+
+  "Ciphertext: zkrtwvvvnrkulxhoywoj"
+#(Words in the flag are separated by underscores)
+flags:
+  - csictf{no_shit_sherlock}
+
+hints:
+    - {
+        content: Words in the flag are separated by underscores,
+        cost: 100
+    }
+    - This hint is free
+
+tags:
+  - crypto
+  - beginner
+
+value: 500
+type: dynamic
+extra:
+  initial: 500
+  decay: 450
+  minimum: 100
+

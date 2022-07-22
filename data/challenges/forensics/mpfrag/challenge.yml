@@ -1,0 +1,16 @@
+version: "0.1"
+name: mpfrag
+author: symmetric
+flags: 'CTF{bridge_ext2_gaps}'
+
+description: 'Was MPEG ever good?'
+  
+tags:
+  - Forensics
+
+value: 500
+type: dynamic
+extra:
+  initial: 500
+  decay: 50
+  minimum: 50

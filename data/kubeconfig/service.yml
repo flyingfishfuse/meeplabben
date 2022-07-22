@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kvaas
+  name: kvaas
+spec:
+  loadBalancerIP: ${LOADBALANCERIP}
+  ports:
+  - port: ${LOADBALANCERPORT}
+    protocol: TCP
+    targetPort: ${LOADBALANCERPORT}
+  selector:
+    app: kvaas
+  type: LoadBalancer

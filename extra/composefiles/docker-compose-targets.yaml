@@ -1,0 +1,32 @@
+#################################################################
+## OWASP JUICESHOP  ; will be locked down for semi-private usage
+# STATUS : FUNCTIONAL
+#################################################################
+#docker run --rm -p 3000:3000 bkimminich/juice-shop
+    juiceshop:
+      image: bkimminich/juice-shop
+      hostname: juiceshop
+      depends_on:
+        - nginx
+      expose:
+        - 3000
+      restart: unless-stopped
+      ports:
+        - ${JUICESHOPPORT}:3000
+      networks:
+        net:
+          external: true
+          ipv4_address: ${JUICESHOPIP}
+
+#################################################################
+##  target1 available for pwnage
+################################################################
+#    cnc:
+#      image: debian:buster
+#      build:
+#        context: ./containers/cnc
+#        dockerfile: Dockerfile
+#      networks:
+#        hax:
+#          external: true
+#          ipv4_address: ${DEBIANIP}

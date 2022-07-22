@@ -1,0 +1,22 @@
+################################################################
+## CERTBOT enables ssl for the backend
+# STATUS : NOT TESTED
+#           trying nginx internal certbot first
+#           seems simpler... two commands
+# PROGRESS: nginx + certbot/internal seems to work ok
+################################################################
+    certbot:
+      image: certbot/certbot
+      hostname: certbot
+      # checks for certbot renewal every 12 hours
+      #entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+      depends_on:
+        - nginx
+      volumes:
+        - ${CERTBOTCONFVOLUMES}
+        - ${CERTBOTDATAVOLUMES}
+      
+      networks:
+        net:
+          ipv4_address: ${CERTBOTIP}
+

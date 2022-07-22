@@ -1,0 +1,31 @@
+name: "Modern Clueless Child"
+author: "SrishtiGohain"
+category: Crypto
+version: "0.1"
+description: |
+  'I was surfing the crimson wave and oh my gosh I was totally bugging. I also tried out the lilac hair trend but it didn't work out.
+  That's not to say you are any better, you are a snob and a half. But let's get back to the main question here-
+  Who am I? (You don't know my name)'
+
+  Ciphertext = "52f41f58f51f47f57f49f48f5df46f6ef53f43f57f6cf50f6df53f53f40f58f51f6ef42f56f43f41f5ef5cf4e" (hex)
+  Key = "12123"
+
+flags:
+  - csictf{you_are_a_basic_person}
+
+tags:
+ - crypto
+
+hints:
+    - {
+        content: "This hint costs points, points you can never get back! muahahaha!",
+        cost: 10
+    }
+    - This hint is free
+
+value: 500
+type: dynamic
+extra:
+  initial: 500  
+  decay: 450
+  minimum: 100
