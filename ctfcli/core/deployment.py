@@ -44,8 +44,8 @@ class Deployment():
          
          # here, we deviate from the challenge class and include
          # deployment and service yaml files
-        self.deployment = deployment
-        self.service = service
+        self.deployment_folder = deployment
+        #self.service = service
 
         # this is set after syncing by the ctfd server, it increments by one per
         # challenge upload so it's predictable

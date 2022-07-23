@@ -203,9 +203,9 @@ class SandboxyCTFdRepository():
         Performs linting of challenge spec file and compresses the solution/handout folders
 
         Arguments are the following:
-            kwargs:dict     folder directory listing
-                            {filename:str : Path}
-            category:str    String containing the category folder name
+            folderpath:Path  folder directory listing
+                             {filename:str : Path}
+            category:str     String containing the category folder name
         
         TODO: if category folder name does not match challenge category
             as given in yaml, reject or move to correct folder
@@ -245,7 +245,13 @@ class SandboxyCTFdRepository():
             challengetype = "deployment"
             debuggreen("[+] Deployment Challenge Processing")
             # begin processing the contents of deployment folder
-            dockerfile_path = challenge_folder_contents_paths["Dockerfile"]
+            deployment = challenge_folder_contents_paths.pop("deployment")
+            try:
+                self.processdeploymentfolder(deployment)
+            except Exception:
+                errorlogger("[-] Failed to process this challenge, skipping!")
+
+            #dockerfile_path = challenge_folder_contents_paths["Dockerfile"]
             #deployment_folder_contents = self.processdeploymentfolder(itempath)
             # handout is not necessary, but suggested
             debuggreen("[+] Deployment handout folder compressing to tarfile")
@@ -263,8 +269,8 @@ class SandboxyCTFdRepository():
             except:
                 errorlogger("[-] Failed to compress solution folder to tarfile")
                 raise Exception
-            else:
-                yellowboldprint("[?] No handout material given in deployed challenge, presuming blackbox testing?") 
+            #else:
+            #    yellowboldprint("[?] No handout material given in deployed challenge, presuming blackbox testing?") 
 
         #====================================================================
         #  NON-DEPLOYMENT PROCESSING
@@ -289,6 +295,7 @@ class SandboxyCTFdRepository():
                 errorlogger("[-] Failed to compress handout folder to tarfile")
                 raise Exception
         else:
+            errorlogger("[-] Something strange happened, throw a banana and try again?")
             raise Exception
         #######################################################################
         # POST VALIDATION FOLDER PROCESSING
@@ -321,16 +328,16 @@ class SandboxyCTFdRepository():
             "type":challengetype,
             "yaml":yamlcontents,
             "folderdata" : {
-                "deployment": dockerfile_path,
-                "service":"",
+                #"service":"",
                 "handout":handout, 
                 "solution": solution
             }
         }
-        #debugblue(f"[DEBUG] VAR folderscanresults:dict \n[DEBUG] {folderscanresults}")
+        # if its a deployed challenge, append the deployment folder to the dict
+        if challengetype == "deployment":
+            folderscanresults["folderdata"]["deployment"] = deployment
+
         return folderscanresults
-        #except Exception:
-        #    errorlogger("[-] ERROR: _processfoldercontents() Encountered an Exception, Please check the log file")
 
     def processdeploymentfolder(self,folderpath:Path)-> Path:
         '''
@@ -338,10 +345,12 @@ class SandboxyCTFdRepository():
          Extracts the path of the dockerfile and deployment.yaml
         '''
         list_of_deployment_folder_files = getsubfiles(folderpath)
-        if "dockerfile" not in list_of_deployment_folder_files
-            errorlogger("[-] ")
+        if "Dockerfile" not in list_of_deployment_folder_files:
+            errorlogger("[-] Dockerfile not found! Skipping this folder!")
             raise Exception
-            asdafssdg
+        if "deployment.yaml" not in list_of_deployment_folder_files:
+            errorlogger("[-] deployment.yaml not found! Skipping this folder!")
+            raise Exception
 
     def _createdeployment(self, folderdata:dict) -> Deployment:
         """
@@ -367,11 +376,16 @@ class SandboxyCTFdRepository():
                 handout=  folderdata.get("folderdata")["handout"],
                 solution=  folderdata.get("folderdata")["solution"],
                 deployment = folderdata.get("folderdata")["deployment"],
-                service = folderdata.get("folderdata")["service"],
-                readme = folderdata.get("folderdata")['README']
+                #service = folderdata.get("folderdata")["service"],
+                #readme = folderdata.get("folderdata")['README']
                 )
             #load the challenge yaml dict into the class
-        newdeployment._initchallenge(**folderdata.get("yaml"))
+        newdeployment._initdeployment(**folderdata.get("yaml"))
+        # you left off here
+        :
+        :
+        :
+        :
         return newdeployment
 
     def _createchallenge(self, folderdata:dict) -> Challenge:
