@@ -1,4 +1,5 @@
 from ctfcli.utils.utils import infolog,errorlogger,greenprint,redprint,yellowboldprint
+from ctfcli.utils.utils import getsubfiles_dict,getsubdirs
 from ctfcli.core.yamlstuff import Yaml,KubernetesYaml
 
 import os
@@ -33,7 +34,6 @@ class Deployment():
             handout,
             solution,
             deployment:Path,
-            service:Path,
             readme
             ):
         self.tag = "!Deployment:"
@@ -41,17 +41,42 @@ class Deployment():
         self.category = category
         self.solution = solution
         self.handout  = handout
-         
+
          # here, we deviate from the challenge class and include
          # deployment and service yaml files
         self.deployment_folder = deployment
+        self.process_deployment_folder(self.deployment_folder)
+        # now everything is in the following attributes
+        #self.dockerfile_path
+        
+        #self.dockerfile_path = dockerfile_path
+
+        self.dockerfile_text = self.parse_dockerfile(self.dockerfile_path)
+         
         #self.service = service
 
         # this is set after syncing by the ctfd server, it increments by one per
         # challenge upload so it's predictable
         self.id = int
 
-    def _initchallenge(self,**kwargs):
+    def process_deployment_folder(self,deployment_folder_path:Path):
+        '''
+        Processes the contents of the deployment folder into the class
+        '''
+        files_in_deployment_folder = getsubfiles_dict(deployment_folder_path)
+        folders_in_deployment_folder = getsubdirs(deployment_folder_path)
+        self.dockerfile_path = files_in_deployment_folder
+
+    def parse_dockerfile(self, dockerfile_path:Path)-> str:
+        '''
+        Gets the string representation of a dockerfile
+        '''
+        dockerfile = open(dockerfile_path)
+        dockerfile_text = dockerfile.read()
+        dockerfile.close()
+        return dockerfile_text
+        
+    def _initdeployment(self,**kwargs):
         """
         Unpacks a dict representation of the challenge.yaml into
         The Challenge() Class, this is ONLY for challenge.yaml
@@ -89,7 +114,7 @@ class Deployment():
 
 class KubernetesConfig(client.Configuration):
     """
-    Wraper for kubernetes.client.configuration
+    Wrapper for kubernetes.client.configuration
         By default, kubectl looks for a file named config 
         in the $HOME/.kube directory. You can specify other 
         kubeconfig files by setting the KUBECONFIG 

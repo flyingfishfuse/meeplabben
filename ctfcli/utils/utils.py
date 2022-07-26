@@ -1,3 +1,4 @@
+from genericpath import isdir
 import sys
 import yaml
 import os
@@ -94,9 +95,11 @@ validationdict = {
 # name of the yaml file expected to have the challenge data in each subfolder
 basechallengeyaml   = "challenge.yml"
 
+import pathlib
+from pathlib import Path
 def getsubdirs(directory)->list:
     '''
-    Returns folders in a directory as Paths
+    Returns folders in a directory as Path objects
     '''
     wat = []
     for filepath in pathlib.Path(directory).iterdir():
@@ -104,12 +107,45 @@ def getsubdirs(directory)->list:
            wat.append(Path(filepath))
     return wat
 
-def getsubfiles(directory)->list[Path]:
+def getsubfiles(directory)->list:
     '''
-    Returns files in a directory as Paths
+    Shallow directory listing of files only
+    for deep search use getsubfiles_deep()
+    '''
+    wat = []
+    for filepath in pathlib.Path(directory).iterdir():
+       if (Path(filepath).is_file()):
+           wat.append(Path(filepath))
+    return wat
+
+def getsubfiles_deep(directory)->list[Path]:
+    '''
+    Returns ALL sub-files in a directory as Paths
+    This itterates down to the BOTTOM of the hierarchy!
+    This is a highly time intensive task!
     '''
     wat = [Path(filepath) for filepath in pathlib.Path(directory).glob('**/*')]
     return wat
+
+
+def getsubfiles_dict(directory)->dict[str:Path]:
+    '''
+    Returns files in a directory as absolute paths in a dict
+    {
+        1filename : 1filepath,
+        2filename : 2filepath,
+        3filename : 3filepath,
+        ... and so on
+    }
+    '''
+    wat = {}
+    #wat = {filepath.stem: Path(filepath) for filepath in pathlib.Path(directory).glob('**/*')}
+    #directory_list = Path(directory).glob('**/*')
+    for filepath in pathlib.Path(directory).iterdir():
+        if filepath.is_file():
+            wat[filepath.stem] = filepath.absolute()
+    return wat
+
 
 # open with read operation
 challengeyamlbufferr = lambda category,challenge: open(os.path.join(category,challenge,basechallengeyaml),'r')

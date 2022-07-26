@@ -351,8 +351,11 @@ class SandboxyCTFdRepository():
         if "deployment.yaml" not in list_of_deployment_folder_files:
             errorlogger("[-] deployment.yaml not found! Skipping this folder!")
             raise Exception
+        if "service.yaml" not in list_of_deployment_folder_files:
+            errorlogger("[-] service.yaml not found! Skipping this folder!")
+            raise Exception
 
-    def _createdeployment(self, folderdata:dict) -> Deployment:
+    def _createdeployment(self, folderdata:dict[str,Path]) -> Deployment:
         """
         Creates a DeploymentChallenge() from a challenge folder containing a dockerfile 
         or a kubernetes spec
@@ -381,11 +384,6 @@ class SandboxyCTFdRepository():
                 )
             #load the challenge yaml dict into the class
         newdeployment._initdeployment(**folderdata.get("yaml"))
-        # you left off here
-        :
-        :
-        :
-        :
         return newdeployment
 
     def _createchallenge(self, folderdata:dict) -> Challenge:
@@ -400,7 +398,7 @@ class SandboxyCTFdRepository():
                 category = folderdata.get("category"),
                 handout=  folderdata.get("folderdata")["handout"],
                 solution=  folderdata.get("folderdata")["solution"],
-                readme = folderdata.get("folderdata")['README']
+                #readme = folderdata.get("folderdata")['README']
                 )
             #load the challenge yaml dict into the class
         newchallenge._initchallenge(**folderdata.get("yaml"))
