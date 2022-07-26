@@ -50,40 +50,6 @@ errorlog     = lambda message: logger.error(message)
 criticallog  = lambda message: logger.critical(message)
 
 
-
-# old code from ctfdrepo.py
-#regularchallengelist = ["handout","solution","challenge", "README"] #.yaml","challenge.yml"]
-#deploymentfoldercontents = ["deployment","Dockerfile","metadata.yaml","README"]
-
-                # itterate over the items in the directory
-                #for item in challengedirlist:
-                    # get the paths
-                    #itempath = challengeitempath(item)
-                    # assign paths to dict as {filename:path}
-                    #kwargs[str(itempath.stem).lower()] =  itempath
-
-            # for list of all item in dir
-            #for item in challengedirlist:
-            #    itempath = challengeitempath(item)
-                # if the item is in the list of approved items
-                # for a regular non-deployment challenge
-                #for validationitemslist in validationdict:
-                #    self._validatefolder(validationdict, )
-                #if itempath.stem in regularchallengelist:
-                #    debuggreen(f"[+] Found : {item}")
-            #    kwargs[str(itempath.stem).lower()] =  itempath
-                # if its a readme
-                #elif itempath.stem == "README":
-                #    kwargs[str(itempath.stem).lower()] = itempath
-                # extra stuff not in approved list of contents
-                #elif itempath.stem not in regularchallengelist:
-                    # ignore it
-                #    continue
-                # all other conditions
-                #else:
-                    #logger.error(f"[-] missing important item in challenge folder, skipping : missing {item}")
-                #    break
-
 #this is where everything is defined, the structure of the repo folders
 validationdict = {
             "standard":["handout","solution","challenge.yaml", "README"],
@@ -95,8 +61,16 @@ validationdict = {
 # name of the yaml file expected to have the challenge data in each subfolder
 basechallengeyaml   = "challenge.yml"
 
-import pathlib
-from pathlib import Path
+
+def file_to_text(filepath:Path):
+    '''
+    opens a file and returns the text
+    '''
+    fileobject = open(filepath)
+    file_text = fileobject.read()
+    fileobject.close()
+    return file_text
+
 def getsubdirs(directory)->list:
     '''
     Returns folders in a directory as Path objects
@@ -109,7 +83,7 @@ def getsubdirs(directory)->list:
 
 def getsubfiles(directory)->list:
     '''
-    Shallow directory listing of files only
+    Shallow directory listing of files only \n
     for deep search use getsubfiles_deep()
     '''
     wat = []
@@ -120,7 +94,7 @@ def getsubfiles(directory)->list:
 
 def getsubfiles_deep(directory)->list[Path]:
     '''
-    Returns ALL sub-files in a directory as Paths
+    Returns ALL sub-files in a directory as Paths\n
     This itterates down to the BOTTOM of the hierarchy!
     This is a highly time intensive task!
     '''

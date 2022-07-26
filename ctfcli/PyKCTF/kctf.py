@@ -18,10 +18,20 @@ if platform.system == "Windows" or "Darwin":
 
 # env vars should be set but check them anyways
 
-class ClusterHandler():
+class Kubeclient(client.Configuration):
+	'''
+	Wrapper for kubernetes.client.configuration
+		By default, kubectl looks for a file named config 
+		in the $HOME/.kube directory. You can specify other 
+		kubeconfig files by setting the KUBECONFIG 
+		environment variable
+	'''
+
+class ClusterHandler(Kubeclient):
 	def __init__(self,
 				 tools_folder:Path,
 				 challenge_repo:Path,
+				kubeconfigpath:Path,
 				 # defaults to linux
 				 platform:str="linux",
 				 cluster_type:str="kind",
@@ -29,7 +39,30 @@ class ClusterHandler():
 				 ):
 		'''
 		Manages the kubernetes cluster
+
+		currently in version 1.5, we set the KUBECONFIG environmment variable 
+		in the top level file __main__.py in the root project directory
+
+		if it isnt set, the module is being used in standalone mode and must be set
+		manually by providing a dict to kubecopnfigpath
+
+		>>>	{
+		>>>		KUBECONFIG  : ""
+		>>>		context	 : ""
+		>>>	}
+
+		Args:
+		   kubeconfigpath (Path): Path to kubeconfig folder
 		'''
+		self.kubeconfigpath = Path
+		if "KUBECONFIG" in os.environ():
+			self.kubeconfigpath = os.environ.get("KUBECONFIG")
+			infolog(f"[+] KUBECONFIG environment variable set as \n {self.kubeconfigpath}")
+		elif "KUBECONFIG" not in os.environ():
+			self.setkubernetesenvironment(kubeconfigpath)
+			infolog(f"[?] KUBECONFIG environment variable is not set")
+			infolog(f"[+] KUBECONFIG environment variable set as \n {self.kubeconfigpath}")
+ 
 		self.KIND_VERSION = os.environ.get("KIND_VERSION", "v0.14.0")
 		self.KUBECTL_VERSION = os.environ.get("KUBECTL_VERSION", "v1.24.2")
 		self.platform = platform
@@ -57,6 +90,44 @@ class ClusterHandler():
 		#paths to required binaries
 		self.kubeconfig_path = Path(self.tools_folder, "kubectl")
 		self.kind_path = Path(self.tools_folder, "kind")
+
+	def setkubernetesenvironment(self,configdict:dict,useenv = True):
+		"""
+		sets kubernetes environment
+		if useenv is set to True, uses system environment variables
+		for setting config, otherwise
+		if set to false, uses provided dict
+			{
+				KUBECONFIG  : ""
+				context	 : ""
+			}
+		"""
+		if useenv:
+			config_file = os.environ.get("KUBECONFIG", KUBE_CONFIG_PATH),
+			context = os.environ.get("KUBECONTEXT")
+		elif not useenv:
+			config_file = configdict.get("KUBECONFIG")
+			context = configdict.get("context")
+
+		self.load_kube_config(
+			config_file,
+			context,
+		)
+
+	def setkubeconnection(self,
+					  authtoken = "YOUR_TOKEN",
+					  authorization = "Bearer",
+					  host = "http://192.168.1.1:8080"):
+		"""
+		"""
+
+		# Defining host is optional and default to http://localhost
+		#configuration.host = "http://localhost"
+
+		self.host = host
+		self.api_key_prefix['authorization'] = authorization
+		self.api_key['authorization'] = authtoken
+		v1 = client.CoreV1Api()
 
 	def ensure_kind(self):
 		'''
@@ -276,7 +347,7 @@ class ClusterHandler():
 
 		yellowboldprint(f'[+] Starting port-forward from {remote_port} to {local_port}')
 		try:
-			command = Path(self.tools_folder,"kubectl") + f'port-forward "deployment/${challenge_name}" --namespace "${self.CHALLENGE_NAMESPACE}" --address=127.0.0.1 "{local_port}:{remote_port}""'
+			command = Path(self.tools_folder,"kubectl") + f'port-forward "deployment/{challenge_name}" --namespace "{self.CHALLENGE_NAMESPACE}" --address=127.0.0.1 "{local_port}:{remote_port}""'
 			try:
 				os.popen(command)
 			except:
