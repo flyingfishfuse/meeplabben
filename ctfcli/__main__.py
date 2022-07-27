@@ -6,155 +6,218 @@ from ctfcli.utils.utils import errorlogger, yellowboldprint,greenprint,redprint
 from ctfcli.utils.config import Config
 from ctfcli.linkage import SandBoxyCTFdLinkage
 from ctfcli.core.gitrepo import SandboxyGitRepository
-from ctfcli.PyKCTF.kctf import ClusterHandler
+#from ctfcli.PyKCTF.kctf import ClusterHandler
 ###############################################################################
 from ctfcli.utils.utils import DEBUG
 ###############################################################################
 class Ctfcli():
-    '''
-        Proper Usage is as follows
+	'''
+		Proper Usage is as follows
 
-        THIS TOOL SHOULD BE ALONGSIDE the challenges repository folder
-        
-        folder
-            subfolder_challenges
-                masterlist.yaml
-                subfolder_category
-            subfolder_ctfcli
-                __main__.py
-        
-        FIRST RUN, If you have not modified the repository this is not necessary!
-        This will generate a Masterlist.yaml file that contains the contents of the 
-        repository for loading into the program
-        >>> host@server$> python ./ctfcli/ ctfcli ctfdrepo init
+		#THIS TOOL SHOULD BE ALONGSIDE the challenges repository folder
+		
+		#folder
+		#	subfolder_challenges
+		#		masterlist.yaml
+		#		subfolder_category
+		#	subfolder_ctfcli
+		#		__main__.py
+		
+		FIRST RUN, If you have not modified the repository this is not necessary!
+		This will generate a Masterlist.yaml file that contains the contents of the 
+		repository for loading into the program
+		>>> host@server$> python ./ctfcli/ ctfcli ctfdrepo init
 
-        you should provide token and url when running the tool, it will store 
-        token only for a limited time. This is intentional and will not be changed
-        This tool is capable of getting its own tokens given an administrative username
-        and password
+		you should provide token and url when running the tool, it will store 
+		token only for a limited time. This is intentional and will not be changed
+		This tool is capable of getting its own tokens given an administrative username
+		and password
 
-        for SINGLE operations, with NO authentication persistance:
-        Replace <URL> with your CTFd website url
-        Replace <TOKEN> with your CTFd website token
-        >>> host@server$> python ./ctfcli/ ctfcli --ctfdurl <URL> --ctfdtoken <TOKEN>
+		for SINGLE operations, with NO authentication persistance:
+		Replace <URL> with your CTFd website url
+		Replace <TOKEN> with your CTFd website token
+		>>> host@server$> python ./ctfcli/ ctfcli --ctfdurl <URL> --ctfdtoken <TOKEN>
 
-        for multiple operations, WITH authentication persistance:
-        This configuration will be able to obtain tokens via CLI
-        >>> host@server$> python ./ctfcli/ ctfcli --ctfdurl <URL> --adminusername moop --adminpassword password
+		for multiple operations, WITH authentication persistance:
+		This configuration will be able to obtain tokens via CLI
+		>>> host@server$> python ./ctfcli/ ctfcli --ctfdurl <URL> --adminusername moop --adminpassword password
 
-        To sync repository contents to CTFd Server, 
-        >>> host@server$> python ./ctfcli/ ctfcli syncrepository 
+		To sync repository contents to CTFd Server, 
+		>>> host@server$> python ./ctfcli/ ctfcli syncrepository 
 
-        Not supplying a password/username, or token, will attempt to read auth
-        information already in the config./cfg file
+		Not supplying a password/username, or token, will attempt to read auth
+		information already in the config./cfg file
 
-        You can obtain a auth token from the "settings" page in the "admin panel"
-        This will initialize the repository, from there, you can either:
-        
-        Pull a remote repository
-        you have to create a new masterlist after this
-        That will be covered further down.
-        >>> host@server$> ctfd.py gitops createremoterepo https://REMOTE_REPO_URL.git
+		You can obtain a auth token from the "settings" page in the "admin panel"
+		This will initialize the repository, from there, you can either:
+		
+		Pull a remote repository
+		you have to create a new masterlist after this
+		That will be covered further down.
+		>>> host@server$> ctfd.py gitops createremoterepo https://REMOTE_REPO_URL.git
 
-        Generating a completion script and adding it to ~/.bashrc
-        >>> host@server$>python ./ctfcli/ ctfcli -- --completion > ~/.ctfcli-completion
-        >>> host@server$> echo "source ~/.ctfcli-completion" >> ~/.bashrc  
+		Generating a completion script and adding it to ~/.bashrc
+		>>> host@server$>python ./ctfcli/ ctfcli -- --completion > ~/.ctfcli-completion
+		>>> host@server$> echo "source ~/.ctfcli-completion" >> ~/.bashrc  
 
-        To generate a completion script for the Fish shell. 
-        (fish is nice but incompatible with bash scripts so far as I know so start.sh wont work)
-        >>> -- --completion fish 
+		To generate a completion script for the Fish shell. 
+		(fish is nice but incompatible with bash scripts so far as I know so start.sh wont work)
+		>>> -- --completion fish 
 
-        If the commands available in the Fire CLI change, you'll have to regenerate the 
-        completion script and source it again.
+		If the commands available in the Fire CLI change, you'll have to regenerate the 
+		completion script and source it again.
 
-        / NOT IMPLEMENTED YET /
-        IF YOU ARE MOVING YOUR INSTALLATION AFTER USING THE PACKER/UNPACKER
-        IN START.SH, PERFORM THE FOLLOWING ACTIONS/COMMANDS
-        >>> host@server$>python ./ctfcli/ ctfcli check_install
-        / NOT IMPLEMENTED YET /
-    '''
-    def __init__(self):
-        # modify the structure of the program here by reassigning classes
-        self._setenv()
-        # process config file
-        # bring in config functions
-        self.config = Config(self.configfile)
-        ctfdrepo = SandBoxyCTFdLinkage(self._challengesfolder, self.masterlist)        # load config file
-        ctfdrepo._initconfig(self.config)
-        # challenge templates, change this to use your own with a randomizer
-        self.TEMPLATESDIR = Path(self._toolfolder , "ctfcli", "templates")
+		/ NOT IMPLEMENTED YET /
+		IF YOU ARE MOVING YOUR INSTALLATION AFTER USING THE PACKER/UNPACKER
+		IN START.SH, PERFORM THE FOLLOWING ACTIONS/COMMANDS
+		>>> host@server$>python ./ctfcli/ ctfcli check_install
+		/ NOT IMPLEMENTED YET /
+	'''
+	def __init__(self):
+		# we import theswe if running in submodule mode
+		self.important_env_list = [
+			"PROJECT_ROOT",
+			"CHALLENGEREPOROOT",
+ 			"COMPOSEDIRECTORY",
+ 			"KUBECONFIGPATH",
+		]
+		# modify the structure of the program here by reassigning classes
+		self._setenv()
 
-        self.ctfdrepo = ctfdrepo
-        # create git repository
-        try:
-            # we do this last so we can add all the created files to the git repo        
-            # this is the git backend, operate this seperately
-            self.gitops = SandboxyGitRepository(self._reporoot)
-            #self.gitops.createprojectrepo()
-        except Exception:
-            errorlogger("[-] Git Repository Creation Failed, check the logfile")
+		# bring in config functions
+		self.config = Config(self.configfile)
+
+		#establish the linkage between meeplabben and the cli
+		# program execution flow goes sideways right here for a bit as the repo
+		# is initialized
+		self.ctfdrepo = SandBoxyCTFdLinkage(self._challengesfolder, self.masterlist)		
+		
+		# load config file
+		self.ctfdrepo._initconfig(self.config)
+		
+		# challenge templates, change this to use your own with a randomizer
+		#self.TEMPLATESDIR = Path(self._toolfolder , "ctfcli", "templates")
+
+		# create/reinitialize a git repository
+		try:
+			# we do this last so we can add all the created files to the git repo		
+			# this is the git backend, operate this seperately
+			self.gitops = SandboxyGitRepository(self._reporoot)
+			#self.gitops.createprojectrepo()
+		except Exception:
+			errorlogger("[-] Git Repository Creation Failed, check the logfile")
+
+		# initialize the cluster managment class
+		#try:
+			#self.init_cluster()
+		#except:
+		#	errorlogger("[-] Cluster Initialization FAILED! Exiting program!")
+		#	sys.exit()
+
+	def init_cluster(self):
+		'''
+		starts a cluster with docker, defaults to "Kind"
+		'''
+		#self.cluster = ClusterHandler(self.tools_folder,self._challengesfolder)
+		# check for kind binary and download if necessary
+		#self.cluster.ensure_kind()
+		# check for kubectl binary and download if necessary
+		#self.cluster.ensure_kubectl()
+		
+	#def handle_cluster(self,cluster_object:ClusterHandler):
+	#	'''
+	#	Handles the cluster manager class
+	#	'''
+	#	self.cluster_instance = cluster_object
+
+	def _getenv(self):
+		'''
+		Retrieves neceessary env vars if running in submodule mode
+		all variables should be a Path to a location nearby
+		'''
+		for each in self.important_env_list:
+			setattr(self,each, Path(os.getenv(each)))
+
+	def run_standalone(self):
+		'''
+		init procedure for running outside the meeplabben environment \n
+		to handle context switching between standalone tool usage with external repo \n
+		and internal usage with built in repository
+		'''
+		try:
+			# set var to indicate folder hierarchy
+			onelevelup = self._toolfolder.parent
+			# if a folder named challenges is in the directory next to this one
+			if os.path.isdir(os.listdir(onelevelup).get('challenges')):
+				yellowboldprint("[+] Challenge Folder Found alongside tool folder, presuming to be repository location")
+				# set var to challenge folder location
+				self._challengesfolder = os.path.join(onelevelup, "challenges")
+				# set var to repository root
+				self._reporoot = onelevelup
+			else:
+				yellowboldprint("[!] Challenge folder not found Alongside tool folder, Exiting program!")
+				raise Exception
+		except Exception:
+			errorlogger("[-] Error, cannot find repository! ")
+	
+	def run_as_submodule(self):
+		'''
+		init procedure for running as a submodule of meeplabben \n
+		to handle context switching between standalone tool usage with external repo \n
+		and internal usage with built in repository
+
+		'''
+		# PROJECT_ROOT has already been set
+		# so has other variables
+		# get the env vars for the module
+		self._getenv()
+		yellowboldprint(f"[+] Project root env var set as {self.PROJECT_ROOT}")
+		self._reporoot = Path(self.PROJECT_ROOT,"data")
+		
+		# expected location of CHALLENGE repository
+		# the location you store all the CHALLENGES for the project
+		self._challengesfolder = Path(self._reporoot, "challenges")
+		
+		# location of binaries used for project
+		# ~/meeplabben/data/bin
+		self.tools_folder = Path(self._reporoot, "bin")
+		
+		# location of the all important masterlist
+		# # ~/meeplabben/data/masterlist.yaml
+		self.masterlist = Path(self._reporoot, "masterlist.yaml")
+		
+		# location of the config file
+		# ~/meeplabben/config.cfg
+		self.configfile = Path(self.PROJECT_ROOT, "config.cfg")
+
+		yellowboldprint(f'[+] Repository root ENV variable is {os.getenv("REPOROOT")}')
+		yellowboldprint(f'[+] Challenge root is {self._challengesfolder}')
 
 
-    def _setenv(self):
-        """
-        Handles environment switching from being a 
-        standlone module to being a submodule
-        """
-        PWD = Path(os.path.realpath("."))
 
-        #PWD_LIST = os.listdir(PWD)
-        # if whatever not in PWD_LIST:
-        #   dosomethingdrastic(fuckitup)
-        #
-        # this must be alongside the challenges folder if being used by itself
-            # Master values
-            # alter these accordingly
-        self._toolfolder   = Path(os.path.dirname(__file__))
-        greenprint(f"[+] Tool folder Located at {self._toolfolder}")
-        if DEBUG == True:
-            # set project root to simulate ctfcli being one context higher
-            os.environ["PROJECT_ROOT"] = str(self._toolfolder.parent)
-            PROJECT_ROOT = os.getenv('PROJECT_ROOT')
-            self.root = PROJECT_ROOT
-        
-        if __name__ == "__main__":
-            # TODO: make function to check if they put it next to
-            #  an actual repository fitting the spec
-            try:
-                # check if alongside challenges folder,
-                # i.e. individual tool usage
-                onelevelup = self._toolfolder.parent
-                oneleveluplistdir = os.listdir(onelevelup)
-                if ('challenges' in oneleveluplistdir):
-                    if os.path.isdir(oneleveluplistdir.get('challenges')):
-                        yellowboldprint("[+] Challenge Folder Found, presuming to be repository location")
-                        self._challengesfolder = os.path.join(onelevelup, "challenges")
-                    self._reporoot = onelevelup
-                else:
-                    yellowboldprint("[!] Challenge folder not found!")
-                    if PROJECT_ROOT != None:
-                        yellowboldprint(f"[+] Project root env var set as {PROJECT_ROOT}")
-                        self._reporoot = Path(PROJECT_ROOT,"data","CTFd")
-            except Exception:
-                errorlogger("[-] Error, cannot find repository! ")
-        else:
-            from __main__ import PROJECT_ROOT
-            self._reporoot = Path(PROJECT_ROOT,"data","CTFd")
+	def _setenv(self):
+		"""
+		Handles environment switching from being a 
+		standlone module to being a submodule
+		"""
+		#PWD = Path(os.path.realpath("."))
 
-        os.environ["REPOROOT"] = str(self._reporoot)
-        self._challengesfolder = Path(self._reporoot, "challenges")
-        # location of binaries used for project
-        self.tools_folder = Path(self._reporoot, "bin")
-        self.masterlist = Path(self._reporoot, "masterlist.yaml")
-        self.configfile = Path(PROJECT_ROOT, "config.cfg")
+		# where this tool is located
+		self._toolfolder   = Path(os.path.dirname(__file__))
+		greenprint(f"[+] Tool folder Located at {self._toolfolder}")
 
-        yellowboldprint(f'[+] Repository root ENV variable is {os.getenv("REPOROOT")}')
-        yellowboldprint(f'[+] Challenge root is {self._challengesfolder}')
-        # this code is inactive currently
+		if __name__ == "__main__":
+			# TODO: make function to check if they put it next to
+			#  an actual repository fitting the spec
+			self.run_standalone()
+		# not being run standalone
+		# i.e. this tool is being used in meeplabben
+		else:
+			self.run_as_submodule()
 
 def main():
    fire.Fire(Ctfcli)
 
 if __name__ == "__main__":
-    main()
-    #fire.Fire(Ctfcli)
+	main()
+	#fire.Fire(Ctfcli)
