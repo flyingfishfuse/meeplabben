@@ -54,19 +54,23 @@ PWD = os.path.realpath(".")
 
 global PROJECT_ROOT
 PROJECT_ROOT = Path(os.path.dirname(__file__))
-os.putenv("PROJECT_ROOT",PROJECT_ROOT)
+os.environ["PROJECT_ROOT"] = str(PROJECT_ROOT.absolute())
+#os.putenv("PROJECT_ROOT",str(PROJECT_ROOT.absolute()))
 
 global CHALLENGEREPOROOT
 CHALLENGEREPOROOT=Path(PROJECT_ROOT,'data','challenges')
-os.putenv("CHALLENGEREPOROOT",CHALLENGEREPOROOT)
+os.environ["CHALLENGEREPOROOT"] = str(CHALLENGEREPOROOT.absolute())
+#os.putenv("CHALLENGEREPOROOT",str(CHALLENGEREPOROOT.absolute()))
 
 global COMPOSEDIRECTORY
 COMPOSEDIRECTORY = Path(PROJECT_ROOT,'data','composefiles')
-os.putenv("COMPOSEDIRECTORY",COMPOSEDIRECTORY)
+os.environ["COMPOSEDIRECTORY"] = str(COMPOSEDIRECTORY.absolute())
+#os.putenv("COMPOSEDIRECTORY",str(COMPOSEDIRECTORY.absolute()))
 
 global KUBECONFIGPATH
 KUBECONFIGPATH = Path(PROJECT_ROOT, 'data','kubeconfig')
-os.putenv("KUBECONFIGPATH",KUBECONFIGPATH)
+os.environ["KUBECONFIGPATH"] = str(KUBECONFIGPATH.absolute())
+#os.putenv("KUBECONFIGPATH",str(KUBECONFIGPATH.absolute()))
 ###############################################################################
 ##					 Docker Information									##
 ###############################################################################
@@ -185,7 +189,7 @@ def main():
 
 
 if __name__ == "__main__":
-	putenv("")
+	#putenv("")
 	main()
 	#fire.Fire(Ctfcli)
 

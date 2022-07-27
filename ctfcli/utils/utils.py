@@ -39,10 +39,10 @@ makeyellow        = lambda text: Fore.YELLOW + ' ' +  text + ' ' + Style.RESET_A
 makered           = lambda text: Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
 makegreen         = lambda text: Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
 makeblue          = lambda text: Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-debugred = lambda text: print(Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
-debugblue = lambda text: print(Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
-debuggreen = lambda text: print(Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
-debugyellow = lambda text: print(Fore.YELLOW + ' ' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
+debugred = lambda text: print(Fore.RED + '[DEBUG]' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
+debugblue = lambda text: print(Fore.BLUE + '[DEBUG]' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
+debuggreen = lambda text: print(Fore.GREEN + '[DEBUG]' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
+debugyellow = lambda text: print(Fore.YELLOW + '[DEBUG]' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
 debuglog     = lambda message: logger.debug(message) 
 infolog      = lambda message: logger.info(message)   
 warninglog   = lambda message: logger.warning(message) 
@@ -71,7 +71,17 @@ def file_to_text(filepath:Path):
     fileobject.close()
     return file_text
 
-def getsubdirs(directory)->list:
+def get_dirlist(directory:Path)-> list[Path]:
+    '''
+    Returns a directory listing of BOTH files and folders
+    '''
+    wat = []
+    for filepath in pathlib.Path(directory).iterdir():
+        wat.append(Path(filepath))
+    return wat
+
+
+def getsubdirs(directory)->list[Path]:
     '''
     Returns folders in a directory as Path objects
     '''

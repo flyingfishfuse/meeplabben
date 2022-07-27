@@ -3,6 +3,7 @@ sys.path.insert(0, os.path.abspath('.'))
 #from ctfcli.utils.config import Config
 from pathlib import Path
 from ctfcli.utils.utils import errorlogger, yellowboldprint,greenprint,redprint
+from ctfcli.utils.utils import debugblue,debuggreen,debugyellow
 from ctfcli.utils.config import Config
 from ctfcli.linkage import SandBoxyCTFdLinkage
 from ctfcli.core.gitrepo import SandboxyGitRepository
@@ -84,28 +85,28 @@ class Ctfcli():
 		# modify the structure of the program here by reassigning classes
 		self._setenv()
 
-		# bring in config functions
-		self.config = Config(self.configfile)
-
 		#establish the linkage between meeplabben and the cli
 		# program execution flow goes sideways right here for a bit as the repo
 		# is initialized
-		self.ctfdrepo = SandBoxyCTFdLinkage(self._challengesfolder, self.masterlist)		
-		
-		# load config file
-		self.ctfdrepo._initconfig(self.config)
+
+		# this item is a function in the menu, allowing you to call functions on the class
+		self.ctfrepo = SandBoxyCTFdLinkage(
+								challenges_folder=self._challengesfolder,
+								masterlistlocation=self.masterlist,
+								configobject=self.config
+								)
 		
 		# challenge templates, change this to use your own with a randomizer
 		#self.TEMPLATESDIR = Path(self._toolfolder , "ctfcli", "templates")
 
 		# create/reinitialize a git repository
-		try:
+		#try:
 			# we do this last so we can add all the created files to the git repo		
 			# this is the git backend, operate this seperately
-			self.gitops = SandboxyGitRepository(self._reporoot)
+		#	self.gitops = SandboxyGitRepository(self._reporoot)
 			#self.gitops.createprojectrepo()
-		except Exception:
-			errorlogger("[-] Git Repository Creation Failed, check the logfile")
+		#except Exception:
+		#	errorlogger("[-] Git Repository Creation Failed, check the logfile")
 
 		# initialize the cluster managment class
 		#try:
@@ -130,12 +131,23 @@ class Ctfcli():
 	#	'''
 	#	self.cluster_instance = cluster_object
 
+	def set_config(self):
+		'''
+		Sets the config file to self
+		'''
+		# bring in config functions
+		self.config = Config(self.configfile)
+
 	def _getenv(self):
 		'''
 		Retrieves neceessary env vars if running in submodule mode
 		all variables should be a Path to a location nearby
 		'''
+		debugyellow("Loading the following variables from the shell environment")
+		for var_name in self.important_env_list:
+			debugblue(var_name)
 		for each in self.important_env_list:
+			debugyellow(f"SETTING {each} as {os.getenv(each)}")
 			setattr(self,each, Path(os.getenv(each)))
 
 	def run_standalone(self):
@@ -171,30 +183,36 @@ class Ctfcli():
 		# so has other variables
 		# get the env vars for the module
 		self._getenv()
-		yellowboldprint(f"[+] Project root env var set as {self.PROJECT_ROOT}")
+		yellowboldprint(f"[+] Project root ENV variable is {self.PROJECT_ROOT}")
+
+		# set the variable indicating the data repository
 		self._reporoot = Path(self.PROJECT_ROOT,"data")
+		yellowboldprint(f'[+] Repository root ENV variable is {self._reporoot}')
 		
 		# expected location of CHALLENGE repository
 		# the location you store all the CHALLENGES for the project
 		self._challengesfolder = Path(self._reporoot, "challenges")
+		yellowboldprint(f'[+] Challenges root ENV variable is {self._challengesfolder}')
 		
 		# location of binaries used for project
 		# ~/meeplabben/data/bin
 		self.tools_folder = Path(self._reporoot, "bin")
+		yellowboldprint(f"[+] Tooling is located at {self.tools_folder}")
 		
 		# location of the all important masterlist
 		# # ~/meeplabben/data/masterlist.yaml
 		self.masterlist = Path(self._reporoot, "masterlist.yaml")
+		yellowboldprint(f'[+] Masterlist is expected to be at {self.masterlist}')
 		
 		# location of the config file
 		# ~/meeplabben/config.cfg
 		self.configfile = Path(self.PROJECT_ROOT, "config.cfg")
-
-		yellowboldprint(f'[+] Repository root ENV variable is {os.getenv("REPOROOT")}')
-		yellowboldprint(f'[+] Challenge root is {self._challengesfolder}')
-
-
-
+		yellowboldprint(f'[+] Config File is expected to be at {self.configfile}')
+		
+		# bring in config functions
+		self.config = Config(self.configfile)
+		self.set_config()
+		
 	def _setenv(self):
 		"""
 		Handles environment switching from being a 
@@ -211,7 +229,7 @@ class Ctfcli():
 			#  an actual repository fitting the spec
 			self.run_standalone()
 		# not being run standalone
-		# i.e. this tool is being used in meeplabben
+		# i.e. this tool is being used in the meeplabben environment
 		else:
 			self.run_as_submodule()
 

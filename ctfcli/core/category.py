@@ -76,12 +76,13 @@ Installed Challenges : {numberofchallenges}
         '''
         delattr(self,challengename)
 
-    def listchallengefolders(self):
+    def listchallengefolders(self)->list[Path]:
         """
         directory listing of every folder in the category folder
         """
         #get subfolder names in category directory
         categoryfolder = getsubdirs(self.location)
+        return categoryfolder
 
     def listchallenges(self) -> list:
         '''

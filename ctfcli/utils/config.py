@@ -5,7 +5,7 @@ from pygments.formatters import TerminalFormatter
 from pygments.lexers import IniLexer, JsonLexer
 import os
 import json
-from ctfcli.utils.utils import greenprint,errorlogger
+from ctfcli.utils.utils import greenprint,errorlogger,debugblue,debugyellow,debuggreen
 import subprocess
 from pathlib import Path
 
@@ -77,6 +77,7 @@ host@server$> python ./ctfcli/ config <command>
         try:
             self.allowedcategories = self.config.get('default','categories').split(",")
             #self.allowedcategories = self['default']['categories'].split(",")
+            debuggreen(f"Processing the following categories: {self.allowedcategories}")
             return self.allowedcategories
         except Exception:
             errorlogger("[-] Failed to read Allowed Categories from Config file --- ")

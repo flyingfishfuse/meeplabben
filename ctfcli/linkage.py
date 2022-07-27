@@ -24,18 +24,18 @@ class SandBoxyCTFdLinkage():
 
 
 	def __init__(self,
-				repositoryfolder:Path,
+				challenges_folder:Path,
 				masterlistlocation:Path,
-				#configobject:Config
+				configobject:Config
 				):
 		self.repo = Repository
-		self.repofolder = repositoryfolder
+		self.challenges_folder = challenges_folder
 		self.masterlistlocation = masterlistlocation
-		self._ctfdops = SandboxyCTFdRepository(self.repofolder, self.masterlistlocation)
+		self._ctfdops = SandboxyCTFdRepository(self.challenges_folder, self.masterlistlocation)
 		#self.gitops = SandboxyGitRepository()
 		#self.config = Config
 		#self.config = configparser.ConfigParser
-		#self.config = Config(configfilelocation)
+		self.config = configobject
 
 	def _checkmasterlist(self):
 		"""
@@ -104,7 +104,7 @@ class SandBoxyCTFdLinkage():
 			listofcategories = self.config._getallowedcategories()
 			repository = self._ctfdops._createrepo(listofcategories)
 			greenprint("[+] Repository Scanned!")
-			repository._setlocation(self.repofolder)
+			repository._setlocation(self.challenges_folder)
 			# create a new masterlist
 			greenprint("[+] Creating Masterlist")
 			masterlist = Masterlist()

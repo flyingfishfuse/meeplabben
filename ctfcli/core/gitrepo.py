@@ -44,12 +44,12 @@ Available Commands:
         Returns False if no git repository is found
         """
         try:
-            debuggreen("[DEBUG] checking for existing repository")
+            debuggreen(" checking for existing repository")
             _ = git.Repo(self.repositoryrootfolder).git_dir
-            debugyellow("[INFOR] Folder has existing repository")
+            debugyellow(" Folder has existing repository")
             return True
         except git.exc.InvalidGitRepositoryError:
-            debugred("[ERROR] NO existing repository")
+            debugred(" NO existing repository")
             return False
 
     def setauth(self):

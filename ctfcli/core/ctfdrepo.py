@@ -1,6 +1,8 @@
+from genericpath import isdir
 from logging import exception
 import os
 from pathlib import Path
+from xmlrpc.client import Boolean
 from ctfcli.core.yamlstuff import Yaml
 from ctfcli.core.category import Category
 
@@ -26,14 +28,14 @@ class SandboxyCTFdRepository():
 	Backend to CTF Repository
 	"""
 	def __init__(self,
-				repositoryfolder:Path,
+				challenges_folder:Path,
 				masterlistlocation
 				):
 		self.masterlistlocation = masterlistlocation
-		self.repofolder = repositoryfolder
+		self.challenges_folder = challenges_folder
 		self.allowedcategories = list
 		try:
-			debuggreen("[+] Instancing a SandboxyCTFdRepository()")
+			debuggreen(" Instancing a SandboxyCTFdRepository()")
 			super(SandboxyCTFdRepository, self).__init__()
 		except Exception as e:
 			errorlogger(f"[-] FAILED: Instancing a SandboxyCTFdLinkage(){e}")
@@ -55,26 +57,24 @@ class SandboxyCTFdRepository():
 		Masterlist, Repo (Tuple): Two new data objects
 
 		'''
-		debuggreen("[+] Starting Repository Scan")
+		debuggreen("Starting Repository Scan")
 		dictofcategories = {}
 		# get subdirectories in repository, these are the category folders
-			#repocategoryfolders = os.listdir(os.path.abspath(self.repofolder))
-		repocategoryfolders = getsubdirs(self.repofolder)
+		repocategoryfolders = getsubdirs(self.challenges_folder)
 			#debuggreen(f"[+] Categories: {[f'{folder}\n' for folder in repocategoryfolders]}")
 		# itterate over folders in challenge directory
 		for category in repocategoryfolders:
-			categorypath = Path(os.path.join(self.repofolder, category))
+			categorypath = Path(os.path.join(self.challenges_folder, category))
 			# if its a repository category folder in aproved list
 			if category.stem in allowedcategories:
 				# process the challenges in that category
-				debuggreen(f"[+] Found Category folder {categorypath.name}")
+				debuggreen(f"Found Category folder {categorypath.name}")
 				#create a new Category and assign name based on folder
 				newcategory = Category(categorypath.name,categorypath)   
-				#newcategory = self._processcategory(categorypath)
 				# this dict contains the entire repository now
 				dictofcategories[newcategory.name] = newcategory
 		# for each category folder in the repository folder
-		for category in dictofcategories.copy():
+		for category in dictofcategories.copy().values():
 			# process through validation
 			processedcategory = self._processcategory(category)
 			dictofcategories.update(processedcategory)
@@ -107,12 +107,12 @@ class SandboxyCTFdRepository():
 		# itterate over the individual challenges
 		for challengefolder in category.dirlisting:
 			# each in its own folder, name not required
-			challengefolderpath = Path(self.repofolder,category.name, challengefolder)
-			debuggreen(f"[+] Found folder {challengefolderpath.name}")
-			debugyellow(f'[+] {challengefolderpath}')
+			challengefolderpath = Path(self.challenges_folder,category.name, challengefolder)
+			debuggreen(f"Found folder {challengefolderpath.name}")
+			debugyellow(f'{challengefolderpath}')
 			try:
 				# load yaml and scan folder
-				folderscanresults = self._processfoldercontents(challengefolderpath)#,category)
+				folderscanresults = self._processfoldercontents(challengefolderpath,challengefolderpath.parent)
 				if folderscanresults["type"] == "deployment":
 					self._createdeployment(folderscanresults)
 				elif folderscanresults["type"] == "challlenge":
@@ -128,43 +128,25 @@ class SandboxyCTFdRepository():
 				continue
 		return category
 
-	def check_for_deployment(self,list_of_items):
+	def check_for_deployment(self,directory:Path):
 		'''
-		Checks if challenge is a deployed challenge
-		currently this code is exactly similar to the complement, this will change in the future
+		Checks if challenge is a deployed challenge, if not, performs better validation
+		in the next step
+		
 		'''
-		valid_items = []
-		validationlist = [
-						  "handout",
-						  "solution",
-						  "deployment"
-						  "challenge.yaml",
-						  #"README"
-						]
-		validationlistlength = len(validationlist)
-		for item in list_of_items:
-			if item in validationlist:
-				valid_items.append(item)
-			if item not in validationlist:
-				debugyellow(f"[-] Found Extraneous item in challenge folder : {item} \n\
-							  [-] This does not conform to specification for a challenge folder and in \n\
-							  [-] future versions will raise an error and the folder will not be processed")
-
-		if len(valid_items) == validationlistlength:
-			debuggreen("[+] All Required files have been found in the specified folder")
+		dirlisting = getsubdirs(directory)
+		if "deployment" in dirlisting:
 			return True
 		else:
-			errorlogger(f"[-] Missing {validationlistlength} required item/s, Contents of folder: \n\t {valid_items}\n rejecting entry")
+			errorlogger("[-] Failed to differentiate between deployment or static challenge")
 			return False
 
 	def check_for_standard(self,list_of_items):
 		'''
 		checks if challenge is standard, non-deployed challenge
-		currently this code is exactly similar to the complement, this will change in the future
-			# yes its repeating code
-			# yes there is a better way
 
 		'''
+		truthyness = bool
 		valid_items = []
 		validationlist =[
 						"handout",
@@ -175,6 +157,7 @@ class SandboxyCTFdRepository():
 		validationlistlength = len(validationlist)
 		for item in list_of_items:
 			if item in validationlist:
+				truthyness = True
 				# let the truthyness variable be set/remain as true
 				debuggreen(f"[+] Found Valid Item {item}")
 				valid = True
@@ -182,13 +165,14 @@ class SandboxyCTFdRepository():
 				#validdatalist.remove(item)
 				valid_items.append(item)
 			if item not in validationlist:
+				truthyness = False
 				debugyellow(f"[-] Found Extraneous item in challenge folder : {item} \n\
 							  [-] This does not conform to specification for a challenge folder and in \n\
 							  [-] future versions will raise an error and the folder will not be processed")
 
 		if len(valid_items) == validationlistlength:
 			debuggreen("[+] All Required files have been found in the specified folder")
-			return True
+			return truthyness
 		else:
 			errorlogger(f"[-] Missing {validationlistlength} required item/s, Contents of folder: \n\t {valid_items}\n rejecting entry")
 			return False
@@ -231,6 +215,7 @@ class SandboxyCTFdRepository():
 		# to create new Challenge() or Deployment() class's from folder contents
 		challenge_folder_contents_paths = {}
 		# get directory listing of challenge folder
+		folders_in_challenge_directory = getsubdirs(folderpath)
 		challengedirlist = os.listdir(os.path.normpath(folderpath))
 		# get the paths
 		for item in challengedirlist:
@@ -241,34 +226,34 @@ class SandboxyCTFdRepository():
 		#====================================================================
 		#   DEPLOYMENT PROCESSING
 		#====================================================================
-		if self.check_for_deployment(challengedirlist):
+		#if self.check_for_deployment(challengedirlist):
+		if self.check_for_deployment(folders_in_challenge_directory):
+			# this needs to be created to pass information down the chain
 			challengetype = "deployment"
 			debuggreen("[+] Deployment Challenge Processing")
 			# begin processing the contents of deployment folder
-			deployment = challenge_folder_contents_paths.pop("deployment")
+			deployment_folder = challenge_folder_contents_paths.pop("deployment")
 			try:
-				self.processdeploymentfolder(deployment)
+				self.processdeploymentfolder(deployment_folder)
 			except Exception:
 				errorlogger("[-] Failed to process this challenge, skipping!")
 
-			#dockerfile_path = challenge_folder_contents_paths["Dockerfile"]
-			#deployment_folder_contents = self.processdeploymentfolder(itempath)
 			# handout is not necessary, but suggested
-			debuggreen("[+] Deployment handout folder compressing to tarfile")
-			try:
-				solution = _processfoldertotarfile(folder = challenge_folder_contents_paths.pop('handout'), 
-													filename = 'solution.tar.gz')
-			except:
-				errorlogger("[-] Failed to compress handout folder to tarfile")
-				raise Exception
+			#debuggreen("[+] Deployment handout folder compressing to tarfile")
+			#try:
+			#	solution = _processfoldertotarfile(folder = challenge_folder_contents_paths.pop('handout'), 
+			#										filename = 'solution.tar.gz')
+			#except:
+			#	errorlogger("[-] Failed to compress handout folder to tarfile")
+			#	raise Exception
 			
-			debuggreen("[+] Deployment solution folder compressing to tarfile")
-			try:
-				handout  = _processfoldertotarfile(folder = challenge_folder_contents_paths.pop('solution'), 
-													   filename = 'handout.tar.gz')
-			except:
-				errorlogger("[-] Failed to compress solution folder to tarfile")
-				raise Exception
+			#debuggreen("[+] Deployment solution folder compressing to tarfile")
+			#try:
+			#	handout  = _processfoldertotarfile(folder = challenge_folder_contents_paths.pop('solution'), 
+			#										   filename = 'handout.tar.gz')
+			#except:
+			#	errorlogger("[-] Failed to compress solution folder to tarfile")
+			#	raise Exception
 			#else:
 			#	yellowboldprint("[?] No handout material given in deployed challenge, presuming blackbox testing?") 
 
@@ -335,7 +320,7 @@ class SandboxyCTFdRepository():
 		}
 		# if its a deployed challenge, append the deployment folder to the dict
 		if challengetype == "deployment":
-			folderscanresults["folderdata"]["deployment"] = deployment
+			folderscanresults["folderdata"]["deployment"] = deployment_folder
 
 		return folderscanresults
 
