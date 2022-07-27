@@ -112,7 +112,7 @@ class SandboxyCTFdRepository():
 			debugyellow(f'{challengefolderpath}')
 			try:
 				# load yaml and scan folder
-				folderscanresults = self._processfoldercontents(challengefolderpath,challengefolderpath.parent)
+				folderscanresults = self._processfoldercontents(challengefolderpath)
 				if folderscanresults["type"] == "deployment":
 					self._createdeployment(folderscanresults)
 				elif folderscanresults["type"] == "challlenge":
@@ -128,17 +128,18 @@ class SandboxyCTFdRepository():
 				continue
 		return category
 
-	def check_for_deployment(self,directory:Path):
+	def check_for_deployment(self,directory_list:list)->bool:
 		'''
 		Checks if challenge is a deployed challenge, if not, performs better validation
 		in the next step
 		
 		'''
-		dirlisting = getsubdirs(directory)
-		if "deployment" in dirlisting:
+		#dirlisting = getsubdirs(directory)
+		expanded_list = [name.stem for name in directory_list]
+		if "deployment" in expanded_list:
 			return True
 		else:
-			errorlogger("[-] Failed to differentiate between deployment or static challenge")
+			debugred("\"deployment\" folder not found, presuming to be standard challenge")
 			return False
 
 	def check_for_standard(self,list_of_items):
@@ -182,14 +183,13 @@ class SandboxyCTFdRepository():
 		Validates the folder supplied
 		'''
 
-	def _processfoldercontents(self, folderpath:Path,category:str)-> dict:
+	def _processfoldercontents(self, folderpath:Path)-> dict:
 		"""
 		Performs linting of challenge spec file and compresses the solution/handout folders
 
 		Arguments are the following:
-			folderpath:Path  folder directory listing
-							 {filename:str : Path}
-			category:str	 String containing the category folder name
+			folderpath:Path  folder path
+
 		
 		TODO: if category folder name does not match challenge category
 			as given in yaml, reject or move to correct folder
@@ -207,7 +207,8 @@ class SandboxyCTFdRepository():
 		>>>	}
 
 		"""
-
+		#extract the category name for shitty hack
+		category = folderpath.parent.stem
 		#######################################################################
 		# VALIDATION OF INDIVIDUAL CHALLENGES
 		#######################################################################
@@ -219,6 +220,7 @@ class SandboxyCTFdRepository():
 		challengedirlist = os.listdir(os.path.normpath(folderpath))
 		# get the paths
 		for item in challengedirlist:
+			# get the path
 			itempath = Path(os.path.abspath(os.path.join(folderpath,item)))
 			# assign paths to dict as {filename:path}
 			challenge_folder_contents_paths[str(itempath.stem).lower()] =  itempath
