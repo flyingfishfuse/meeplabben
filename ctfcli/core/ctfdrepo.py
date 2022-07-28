@@ -128,60 +128,137 @@ class SandboxyCTFdRepository():
 				continue
 		return category
 
-	def check_for_deployment(self,directory_list:list)->bool:
+	def check_for_deployment(self,directory_list:list[Path])->bool:
 		'''
 		Checks if challenge is a deployed challenge, if not, performs better validation
 		in the next step
 		
 		'''
-		#dirlisting = getsubdirs(directory)
-		expanded_list = [name.stem for name in directory_list]
-		if "deployment" in expanded_list:
+		expanded_list = {name.stem:name for name in directory_list}
+		if "deployment" in expanded_list and expanded_list["deployment"].is_dir():
+			# set challenge type
+			self.challengetype = "deployment"
+			# validate contents
+			self.processdeploymentfolder(expanded_list["deployment"])
+			# set var for data extraction
+			self.deployment_folder = expanded_list["deployment"]
 			return True
 		else:
 			debugred("\"deployment\" folder not found, presuming to be standard challenge")
 			return False
 
-	def check_for_standard(self,list_of_items):
+	def package_solution(self, path_to_folder:Path):
+		'''
+		packages the solution folder into a tar file for distribution
+		'''
+		# handout/solution is necessary
+		# pack up solution
+		try:
+			debuggreen("Packaging solution to tarfile")
+			self.solution = _processfoldertotarfile(folder = path_to_folder, 
+											   filename = 'solution.tar.gz')
+			
+		except:
+			errorlogger("[-] Failed to compress handout folder to tarfile")
+			raise Exception
+
+	def package_handout(self, path_to_folder:Path):
+		'''
+		pack up handout folder into a tar file for distribution
+		'''
+		try: 
+			debuggreen("Packaging handout to tarfile")
+			self.handout  = _processfoldertotarfile(folder = path_to_folder, 
+											   filename = 'handout.tar.gz')
+		except:
+			errorlogger("[-] Failed to compress handout folder to tarfile")
+			raise Exception
+
+	def check_for_standard(self,folder_path:Path):
 		'''
 		checks if challenge is standard, non-deployed challenge
+		Designed to allow for missing items, if all are missing, this returns FALSE \n
+		If the challenge.yaml is missing, it returns FALSE regardless if "handout" or "solution" \n
+		folders are present. 
+		
+		ALL extraneous items are currently SKIPPED!\n
+		If its not part of the homework or solution, its irelevant!
 
+		EXTRA ITEMS WILL CAUSE THE CHALLENGE TO BE REJECTED!
+		THIS WILL NOT BE CHANGED!
+
+		Follow the schema!
 		'''
-		truthyness = bool
+		debuggreen("[+] Standard Challenge processing")
 		valid_items = []
 		validationlist =[
 						"handout",
 						"solution",
-						"challenge.yaml",
+						"challenge",
 						#"README"
 						]
 		validationlistlength = len(validationlist)
-		for item in list_of_items:
-			if item in validationlist:
-				truthyness = True
-				# let the truthyness variable be set/remain as true
-				debuggreen(f"[+] Found Valid Item {item}")
-				valid = True
-				# remove the item from the validation list
-				#validdatalist.remove(item)
-				valid_items.append(item)
-			if item not in validationlist:
-				truthyness = False
-				debugyellow(f"[-] Found Extraneous item in challenge folder : {item} \n\
-							  [-] This does not conform to specification for a challenge folder and in \n\
-							  [-] future versions will raise an error and the folder will not be processed")
+		try:
+			for item in folder_path.iterdir():
+				# if its in the list
+				if item.stem in validationlist:
+					# let the truthyness variable be set/remain as true
+					truthyness = True
+					debuggreen(f"Found Valid Item {item}")
+					valid_items.append(item)
 
-		if len(valid_items) == validationlistlength:
+					if item.stem == "handout":
+						self.package_handout(item)
+					
+					if item.stem == "solution":
+						self.package_solution(item)
+
+					# validate the challenge yaml
+					if item.stem == "challenge" and item.is_file():
+						self.yaml_contents = self.lint_challenge_yaml(folder_path)
+
+				if item not in validationlist:
+					debugyellow(f"[-] Found Extraneous item in challenge folder : {item} \n\
+								  [-] This does not conform to specification for a challenge folder")
+			
+			self.challengetype = "challenge"
 			debuggreen("[+] All Required files have been found in the specified folder")
-			return truthyness
-		else:
+		except:
 			errorlogger(f"[-] Missing {validationlistlength} required item/s, Contents of folder: \n\t {valid_items}\n rejecting entry")
+			errorlogger("[-] Failed to process challenge folder, check the logs")
 			return False
 
-	def validate_folder_contents(self,folder_contents):
+	def lint_challenge_yaml(self, path_to_yaml:Path):
 		'''
-		Validates the folder supplied
+		Performs validation on the challenge.yaml file during folder processing
 		'''
+		
+		#if validated_challenge_folder_contents_paths.get("deployment") is None:
+					  
+		# start the linter
+		linter = Linter()
+		# pick out the challenge yaml
+		# instance a Yaml class
+		challengeyaml = Yaml().loadyaml(path_to_yaml)
+		#TODO:shitty hack to get things flowing properly
+		# so far, the category folder has been the category name... but what if 
+		# they are just tossing the wrong challenge in the wrong category?
+		# here we replace the category name, fed to the function as the name of the folder
+		# the challenge was residing in
+		# with the category given in the challenge yaml
+
+		#since it should only EVER be in a direct subfolder of a category folder
+		# the except should NEVER be triggered so if it IS
+		# SOMETHING is HORRIBLY wrong
+		challengeyaml["category"] = path_to_yaml.parent.parent
+
+		# begin linting the file
+		try:
+			yamlcontents = linter.lintchallengeyaml(challengeyaml)
+		except Exception:
+			errorlogger("[-] Failure Linting challenge.yaml file!")
+			pass
+		return yamlcontents
 
 	def _processfoldercontents(self, folderpath:Path)-> dict:
 		"""
@@ -207,122 +284,38 @@ class SandboxyCTFdRepository():
 		>>>	}
 
 		"""
-		#extract the category name for shitty hack
-		category = folderpath.parent.stem
 		#######################################################################
 		# VALIDATION OF INDIVIDUAL CHALLENGES
 		#######################################################################
-		# begin scanning and if necessary, file parsing
-		# to create new Challenge() or Deployment() class's from folder contents
-		challenge_folder_contents_paths = {}
-		# get directory listing of challenge folder
-		folders_in_challenge_directory = getsubdirs(folderpath)
-		challengedirlist = os.listdir(os.path.normpath(folderpath))
-		# get the paths
-		for item in challengedirlist:
-			# get the path
-			itempath = Path(os.path.abspath(os.path.join(folderpath,item)))
-			# assign paths to dict as {filename:path}
-			challenge_folder_contents_paths[str(itempath.stem).lower()] =  itempath
-
+		#extract the category name for shitty hack
+		category = folderpath.parent.stem
 		#====================================================================
 		#   DEPLOYMENT PROCESSING
 		#====================================================================
 		#if self.check_for_deployment(challengedirlist):
-		if self.check_for_deployment(folders_in_challenge_directory):
-			# this needs to be created to pass information down the chain
-			challengetype = "deployment"
-			debuggreen("[+] Deployment Challenge Processing")
-			# begin processing the contents of deployment folder
-			deployment_folder = challenge_folder_contents_paths.pop("deployment")
-			try:
-				self.processdeploymentfolder(deployment_folder)
-			except Exception:
-				errorlogger("[-] Failed to process this challenge, skipping!")
-
-			# handout is not necessary, but suggested
-			#debuggreen("[+] Deployment handout folder compressing to tarfile")
-			#try:
-			#	solution = _processfoldertotarfile(folder = challenge_folder_contents_paths.pop('handout'), 
-			#										filename = 'solution.tar.gz')
-			#except:
-			#	errorlogger("[-] Failed to compress handout folder to tarfile")
-			#	raise Exception
-			
-			#debuggreen("[+] Deployment solution folder compressing to tarfile")
-			#try:
-			#	handout  = _processfoldertotarfile(folder = challenge_folder_contents_paths.pop('solution'), 
-			#										   filename = 'handout.tar.gz')
-			#except:
-			#	errorlogger("[-] Failed to compress solution folder to tarfile")
-			#	raise Exception
-			#else:
-			#	yellowboldprint("[?] No handout material given in deployed challenge, presuming blackbox testing?") 
+		self.check_for_deployment(folderpath)
 
 		#====================================================================
 		#  NON-DEPLOYMENT PROCESSING
 		#====================================================================
-		elif self.check_for_standard(challengedirlist):
-			challengetype = "challenge"
-			debuggreen("[+] Standard Challenge processing")
-			# handout/solution is necessary
-			# pack up solution
-			try:
-				solution = _processfoldertotarfile(folder = challenge_folder_contents_paths.pop('handout'), 
-												filename = 'solution.tar.gz')
-			
-			except:
-				errorlogger("[-] Failed to compress handout folder to tarfile")
-				raise Exception
-			# pack up handout  
-			try: 
-				handout  = _processfoldertotarfile(folder = challenge_folder_contents_paths.pop('solution'), 
-												filename = 'handout.tar.gz')
-			except:
-				errorlogger("[-] Failed to compress handout folder to tarfile")
-				raise Exception
-		else:
-			errorlogger("[-] Something strange happened, throw a banana and try again?")
-			raise Exception
-		#######################################################################
-		# POST VALIDATION FOLDER PROCESSING
-		#######################################################################
+		
+		self.check_for_standard(folderpath)
 
-		#if validated_challenge_folder_contents_paths.get("deployment") is None:
-					  
-		# start the linter
-		linter = Linter()
-		# pick out the challenge yaml
-		# instance a Yaml class
-		challengeyaml = Yaml().loadyaml(challenge_folder_contents_paths.pop("challenge"))
-		# lint the challenge
-		#TODO:shitty hack to get thins flowing properly
-		# when everything is modified finally this can get removed
-		# so far, the category folder has been the category name... but what if 
-		# they are just tossing the wrong challenge in the wrong category?
-		# here we replace the category name, fed to the function as the name of the folder
-		# the challenge was residing in
-		# with the category given in the challenge yaml
-		#challengeyaml.update({"category": category})
-		challengeyaml["category"] = category
-		try:
-			yamlcontents = linter.lintchallengeyaml(challengeyaml)
-		except Exception:
-			errorlogger("[-] Failure Linting Challenge yaml files")
-			pass
+		#######################################################################
 		folderscanresults = {
 			"category": category,
-			"type":challengetype,
-			"yaml":yamlcontents,
+			"type":self.challengetype,
+			"yaml":self.yaml_contents,
 			"folderdata" : {
 				#"service":"",
-				"handout":handout, 
-				"solution": solution
+				"handout":self.handout, 
+				"solution": self.solution
 			}
 		}
+
 		# if its a deployed challenge, append the deployment folder to the dict
-		if challengetype == "deployment":
-			folderscanresults["folderdata"]["deployment"] = deployment_folder
+		if self.challengetype == "deployment":
+			folderscanresults["folderdata"]["deployment"] = self.deployment_folder
 
 		return folderscanresults
 
