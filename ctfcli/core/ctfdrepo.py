@@ -128,13 +128,13 @@ class SandboxyCTFdRepository():
 				continue
 		return category
 
-	def check_for_deployment(self,directory_list:list[Path])->bool:
+	def _check_for_deployment(self,directory:Path)->bool:
 		'''
 		Checks if challenge is a deployed challenge, if not, performs better validation
 		in the next step
 		
 		'''
-		expanded_list = {name.stem:name for name in directory_list}
+		expanded_list = {name.stem:name for name in directory.iterdir()}
 		if "deployment" in expanded_list and expanded_list["deployment"].is_dir():
 			# set challenge type
 			self.challengetype = "deployment"
@@ -142,39 +142,14 @@ class SandboxyCTFdRepository():
 			self.processdeploymentfolder(expanded_list["deployment"])
 			# set var for data extraction
 			self.deployment_folder = expanded_list["deployment"]
+			self._check_for_standard(directory)
 			return True
+
 		else:
 			debugred("\"deployment\" folder not found, presuming to be standard challenge")
 			return False
 
-	def package_solution(self, path_to_folder:Path):
-		'''
-		packages the solution folder into a tar file for distribution
-		'''
-		# handout/solution is necessary
-		# pack up solution
-		try:
-			debuggreen("Packaging solution to tarfile")
-			self.solution = _processfoldertotarfile(folder = path_to_folder, 
-											   filename = 'solution.tar.gz')
-			
-		except:
-			errorlogger("[-] Failed to compress handout folder to tarfile")
-			raise Exception
-
-	def package_handout(self, path_to_folder:Path):
-		'''
-		pack up handout folder into a tar file for distribution
-		'''
-		try: 
-			debuggreen("Packaging handout to tarfile")
-			self.handout  = _processfoldertotarfile(folder = path_to_folder, 
-											   filename = 'handout.tar.gz')
-		except:
-			errorlogger("[-] Failed to compress handout folder to tarfile")
-			raise Exception
-
-	def check_for_standard(self,folder_path:Path):
+	def _check_for_standard(self,folder_path:Path):
 		'''
 		checks if challenge is standard, non-deployed challenge
 		Designed to allow for missing items, if all are missing, this returns FALSE \n
@@ -189,7 +164,7 @@ class SandboxyCTFdRepository():
 
 		Follow the schema!
 		'''
-		debuggreen("[+] Standard Challenge processing")
+		debuggreen("Standard Challenge processing")
 		valid_items = []
 		validationlist =[
 						"handout",
@@ -204,25 +179,26 @@ class SandboxyCTFdRepository():
 				if item.stem in validationlist:
 					# let the truthyness variable be set/remain as true
 					truthyness = True
-					debuggreen(f"Found Valid Item {item}")
+					debuggreen(f"Found Valid Item {item.name}")
 					valid_items.append(item)
 
 					if item.stem == "handout":
-						self.package_handout(item)
+						self._package_handout(item)
 					
 					if item.stem == "solution":
-						self.package_solution(item)
+						self._package_solution(item)
 
 					# validate the challenge yaml
 					if item.stem == "challenge" and item.is_file():
-						self.yaml_contents = self.lint_challenge_yaml(folder_path)
+						self.yaml_contents = self.lint_challenge_yaml(item)
 
-				if item not in validationlist:
-					debugyellow(f"[-] Found Extraneous item in challenge folder : {item} \n\
+				if item.stem not in validationlist:
+					debugyellow(f"[-] Found Extraneous item in challenge folder : {item.name} \n\
 								  [-] This does not conform to specification for a challenge folder")
+
 			
 			self.challengetype = "challenge"
-			debuggreen("[+] All Required files have been found in the specified folder")
+			debuggreen("All Required files have been found in the specified folder")
 		except:
 			errorlogger(f"[-] Missing {validationlistlength} required item/s, Contents of folder: \n\t {valid_items}\n rejecting entry")
 			errorlogger("[-] Failed to process challenge folder, check the logs")
@@ -288,22 +264,32 @@ class SandboxyCTFdRepository():
 		# VALIDATION OF INDIVIDUAL CHALLENGES
 		#######################################################################
 		#extract the category name for shitty hack
-		category = folderpath.parent.stem
+		self.category = folderpath.parent.stem
 		#====================================================================
 		#   DEPLOYMENT PROCESSING
+		#
 		#====================================================================
 		#if self.check_for_deployment(challengedirlist):
-		self.check_for_deployment(folderpath)
-
+		if self._check_for_deployment(folderpath):
+			debuggreen("Deployment Challenge Processed successfully")
+		else:
 		#====================================================================
 		#  NON-DEPLOYMENT PROCESSING
 		#====================================================================
-		
-		self.check_for_standard(folderpath)
+			self._check_for_standard(folderpath)
 
 		#######################################################################
+
+		finalized_results = self._package_challenge()
+		return finalized_results
+
+	def _package_challenge(self):
+		'''
+		final step in validation, collates data into dict for feeding
+		the Deployment() or Challenge() initializers
+		'''
 		folderscanresults = {
-			"category": category,
+			"category": self.category,
 			"type":self.challengetype,
 			"yaml":self.yaml_contents,
 			"folderdata" : {
@@ -333,6 +319,36 @@ class SandboxyCTFdRepository():
 			raise Exception
 		if "service.yaml" not in list_of_deployment_folder_files:
 			errorlogger("[-] service.yaml not found! Skipping this folder!")
+			raise Exception
+
+
+	def _package_solution(self, path_to_folder:Path):
+		'''
+		packages the solution folder into a tar file for distribution
+		'''
+		# handout/solution is necessary
+		# pack up solution
+		try:
+			debuggreen("Packaging solution to tarfile")
+			self.solution = _processfoldertotarfile(folder = path_to_folder, 
+											   filename = 'solution.tar.gz')
+			debuggreen("Folder successfully packaged into tar file")
+			
+		except:
+			errorlogger("[-] Failed to compress handout folder to tarfile")
+			raise Exception
+
+	def _package_handout(self, path_to_folder:Path):
+		'''
+		pack up handout folder into a tar file for distribution
+		'''
+		try: 
+			debuggreen("Packaging handout to tarfile")
+			self.handout  = _processfoldertotarfile(folder = path_to_folder, 
+											   filename = 'handout.tar.gz')
+			debuggreen("Folder successfully packaged into tar file")
+		except:
+			errorlogger("[-] Failed to compress handout folder to tarfile")
 			raise Exception
 
 	def _createdeployment(self, folderdata:dict[str,Path]) -> Deployment:

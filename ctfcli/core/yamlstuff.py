@@ -34,11 +34,11 @@ class Yaml(): #filetype
         self.filename = os.path.basename(filepath)
         self.filepath = filepath
         self.directory = self.filepath.parent
-        if self.filename.endswith(".yaml"):
-            greenprint("[!] File is .yaml! Presuming to be kubernetes config!")
+        if self.filename.endswith(".yml"):
+            greenprint("[!] File is .yml! Presuming to be cluster configuration file!")
             self.type = "kubernetes"
-        elif self.filename.endswith(".yml"):
-            greenprint("[!] Challenge File presumed (.yml)")
+        elif self.filename.endswith(".yaml"):
+            greenprint("[!] Challenge File presumed (.yaml)")
             self.type = "challenge"
         try:
             with open(filepath, 'r') as stream:
