@@ -58,7 +58,7 @@ class SandboxyCTFdRepository():
 
 		'''
 		debuggreen("Starting Repository Scan")
-		dictofcategories = {}
+		self.dictofcategories = {}
 		# get subdirectories in repository, these are the category folders
 		repocategoryfolders = getsubdirs(self.challenges_folder)
 			#debuggreen(f"[+] Categories: {[f'{folder}\n' for folder in repocategoryfolders]}")
@@ -72,19 +72,19 @@ class SandboxyCTFdRepository():
 				#create a new Category and assign name based on folder
 				newcategory = Category(categorypath.name,categorypath)   
 				# this dict contains the entire repository now
-				dictofcategories[newcategory.name] = newcategory
+				self.dictofcategories[newcategory.name] = newcategory
 		# for each category folder in the repository folder
-		for category in dictofcategories.copy().values():
+		for category in self.dictofcategories.copy().values():
 			# process through validation
 			processedcategory = self._processcategory(category)
-			dictofcategories.update(processedcategory)
+			self.dictofcategories.update({processedcategory.name:processedcategory})
 		# assign all categories to repository class
 		# using protoclass + dict expansion
-		newrepo = Repository(**dictofcategories)
+		#newrepo = Repository(**self.dictofcategories)
 		# return this class to the upper level scope
-		return newrepo
+		return  Repository(**self.dictofcategories)
 
-	def _processcategory(self,category:Category)-> Category:
+	def _processcategory(self,newcategory:Category)-> Category:
 		'''
 		Itterates over a Category folder to add challenges to the database
 
@@ -101,13 +101,14 @@ class SandboxyCTFdRepository():
 				"handout":handout, 
 				"solution": solution
 			}
-		'''	 
+		'''
+		self.newcategory = newcategory
 		#get subfolder names in category directory
 		#categoryfolder = getsubdirs(newcategory.location)
 		# itterate over the individual challenges
-		for challengefolder in category.dirlisting:
+		for challengefolder in self.newcategory.dirlisting:
 			# each in its own folder, name not required
-			challengefolderpath = Path(self.challenges_folder,category.name, challengefolder)
+			challengefolderpath = Path(self.challenges_folder,self.newcategory.name, challengefolder)
 			debuggreen(f"Found folder {challengefolderpath.name}")
 			debugyellow(f'{challengefolderpath}')
 			try:
@@ -121,12 +122,12 @@ class SandboxyCTFdRepository():
 
 				#assign challenge to category
 				#newcategory._addchallenge(newchallenge)
-				category._addchallenge(newchallenge)
+				self.newcategory._addchallenge(newchallenge)
 
 			except Exception:
 				errorlogger('[-] Error Creating Challenge!')
 				continue
-		return category
+		return self.newcategory
 
 	def _check_for_deployment(self,folder_path:Path)->bool:
 		'''
@@ -176,7 +177,7 @@ class SandboxyCTFdRepository():
 		validationlist =[
 						"handout",
 						"solution",
-						"challenge",
+						"challenge.yaml",
 						#"README"
 						]
 		validationlistlength = len(validationlist)
@@ -189,20 +190,21 @@ class SandboxyCTFdRepository():
 
 			for item in directory.iterdir():
 					# if its in the list
-					if item.stem in validationlist:
+					if item.name in validationlist:
 						# let the truthyness variable be set/remain as true
 						truthyness = True
-						debuggreen(f"Found Valid Item {item.name}")
+						debuggreen(f"Found Valid Item : {item.name}")
 						valid_items.append(item)
-
-						if item.stem == "handout":
+						# handout and solution are always folders, they get zipped
+						# to allow for more than one file to be part of both
+						if item == "handout" and item.is_dir():
 							self._package_handout(item)
 
-						if item.stem == "solution":
+						if item == "solution" and item.is_dir():
 							self._package_solution(item)
 
 						# validate the challenge yaml
-						if item.stem == "challenge" and item.is_file():
+						if item.name == "challenge.yaml" and item.is_file():
 							self.yaml_contents = self.lint_challenge_yaml(item)
 
 					elif item.stem not in validationlist:

@@ -107,8 +107,14 @@ class Linter():
             requirementsdict = self.extractrequired(dictfromyaml)
             #did a shitty hack in the scope above to push the category into the dict
             # this value needs to be assigned by the yaml eventually
-            self._processcategory(requirementsdict)
-            self._processrequired(requirementsdict)
+            try:
+                self._processcategory(requirementsdict)
+            except:
+                errorlogger("[-] Failed to validate category")
+            try:
+                self._processrequired(requirementsdict)
+            except:
+                errorlogger("[-] Failed to validate required fields")
 
             #process optional fields
             optionaldict = self.extractoptional(dictfromyaml)
@@ -158,12 +164,21 @@ class Linter():
             debuggreen("extracting required tags in linter")
             reqdict = {}
             # some challenges have no state assigned
-            self._processstate(dictfromyaml)
+            try:
+                self._processstate(dictfromyaml)
+            except:
+                errorlogger("[-] Failed to validate state")
             # field with more than one tag for the same data
-            self._processflags(dictfromyaml)
+            try:
+                self._processflags(dictfromyaml)
+            except:
+                errorlogger("[-] Failed to validate flags")
             # type is higher level important
             # required flags are indicated by its existance
-            self._processtype(dictfromyaml)
+            try:
+                self._processtype(dictfromyaml)
+            except:
+                errorlogger("[-] Failed to validate type")
             if self.typeof.get("typeof") == "dynamic":
                 self.requiredfields.append("extra")
             
@@ -205,7 +220,7 @@ class Linter():
             else:
                 self.value = {'value':tagdata}
         except Exception:
-            errorlogger("[-] ERROR: Failed to validate Required Fields \n")
+            errorlogger("[-] ERROR: Failed to validate score value field \n")
 
     def _processtype(self,requirementsdict:dict):
         """
@@ -270,21 +285,27 @@ class Linter():
         """
         
         """
-        debuggreen("processing name in linter")
-        tagdata = requirementsdict.pop("name")
-        self.name = {"name":tagdata}
+        try:
+            debuggreen("processing name in linter")
+            tagdata = requirementsdict.pop("name")
+            self.name = {"name":tagdata}
+        except:
+            errorlogger("[-] Failed to validate name field")
 
     def _processdescription(self,requirementsdict):
         """
         
         """
-        debuggreen("processing description in linter")
-        if requirementsdict.get('description') != None:
-            tagdata = requirementsdict.pop("description")
-            self.description = {"description":tagdata}
-        else:
-            debugred("no Version tag in yaml")
-            self.description = {"description": "EMPTY NOT IN YAML"}
+        try:
+            debuggreen("processing description in linter")
+            if requirementsdict.get('description') != None:
+                tagdata = requirementsdict.pop("description")
+                self.description = {"description":tagdata}
+            else:
+                debugred("no Version tag in yaml")
+                self.description = {"description": "EMPTY NOT IN YAML"}
+        except:
+            errorlogger("[-] Failed to validate description field")
 
     def _processversion(self,requirementsdict):
         """
@@ -391,7 +412,7 @@ class Linter():
         
         """
         try:
-            debuggreen("[DEBUG] processing topics in linter")
+            debuggreen("processing topics in linter")
             if optionaldict.get("topics"):
                 tagdata = optionaldict.pop("topics")
                 self.topics = {"topics": tagdata }

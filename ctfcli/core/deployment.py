@@ -44,7 +44,6 @@ class Deployment():
 
 		 # here, we deviate from the challenge class and include
 		 # deployment and service yaml files
-		self.deployment_folder_path = deployment
 
 		self.process_deployment_folder()
 

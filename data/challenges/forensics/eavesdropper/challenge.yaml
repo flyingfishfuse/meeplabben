@@ -10,6 +10,7 @@
 version: beta1
 name: eavesdropper
 author: corgi
+type: static
 flag: 'CTF{DTMF_is_Awesome}'
 description: We managed to eavesdrop and record Mark's call to Corgi bank, can you decipher his identification code and call +1-406-445-0909 to recieve the flag.
 value: 500

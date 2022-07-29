@@ -4,10 +4,35 @@ ctf manager and deployer
 # Hierarchical overview of repository
 
 1. `masterlist.yaml` MUST be at the top of the hierarchy in the `/PROJECT_ROOT/data` folder
+
+2. A challenge is structured as thus:
+
+        Challenge_Category/                     (required, any name allowed)
+        ├── standard_challenge_name/            (required, any name allowed)
+        │   ├── challenge.yaml                  (required, yaml extension important)      
+        │   ├── handout/                        (optional)
+        │   └── solution/                       (optional)
+        |
+        ├── deployed_challenge_name/            (required, any name allowed)
+        │   ├── challenge.yaml                  (required, yaml extension important)      
+        │   ├── deployment/                     (required, capitalization important)
+        |   |   ├── service.yml                 (required, yml extension important)
+        |   |   ├── deployment.yml              (required, yml extension important)
+        |   |   ├── Dockerfile                  (required, capitalization important)
+        |   |   └── Deployment_data_folder/     (optional, any name allowed)
+        │   ├── handout/                        (optional)
+        │   └── solution/                       (optional)
+
+#### THE CATEGORY OF THE CHALLENGE WILL REFLECT THE FOLDER IT RESIDES IN IF THE CATEGORY FOLDER IS "CRYPTO", THE CATEGORY TAG IN CHALLENGE.YAML  WILL CHANGE TO "CRYPTO", This will not change any time soon!
+####
+<br>
+
 3. deployed challenges MUST have a folder named 
 
         deployment
+
 4. this folder named "deployment" MUST have the `service.yaml `and `metadata.yml` AND `Dockerfile`, all software to be exploited MUST be in a subfolder
+
 5. deployed challenges can be blackbox, i.e. no solution or handout
 
 # Instructions!

@@ -10,6 +10,7 @@
 version: beta1
 name: rsa-debugger
 author: symmetric
+type: static
 flag: 'CTF{curveball_not_just_for_ecc}'
 description: 'Choose your own keyventure!'
 value: 500

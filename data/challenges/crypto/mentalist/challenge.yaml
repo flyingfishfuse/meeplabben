@@ -10,6 +10,7 @@
 version: beta1
 name: mentalist
 author: symmetric
+type: static
 flag: 'CTF{rand_should_be_enough_for_anyone}'
 description: 'Can you read the mind of a computer?'
 value: 500
