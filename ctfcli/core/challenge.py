@@ -43,10 +43,10 @@ class Challenge():#Yaml):
             category,
             handout,
             solution,
-            readme
+            #readme
             ):
         self.tag = "!Challenge:"
-        self.readme = readme
+        #self.readme = readme
         self.category = category
         #self.deployment         = deployment
         self.solution = solution

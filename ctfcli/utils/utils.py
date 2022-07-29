@@ -39,10 +39,10 @@ makeyellow        = lambda text: Fore.YELLOW + ' ' +  text + ' ' + Style.RESET_A
 makered           = lambda text: Fore.RED + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
 makegreen         = lambda text: Fore.GREEN + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
 makeblue          = lambda text: Fore.BLUE + ' ' +  text + ' ' + Style.RESET_ALL if (COLORMEQUALIFIED == True) else None
-debugred = lambda text: print(Fore.RED + '[DEBUG]' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
-debugblue = lambda text: print(Fore.BLUE + '[DEBUG]' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
-debuggreen = lambda text: print(Fore.GREEN + '[DEBUG]' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
-debugyellow = lambda text: print(Fore.YELLOW + '[DEBUG]' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
+debugred = lambda text: print(Fore.RED + '[DEBUG] ' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
+debugblue = lambda text: print(Fore.BLUE + '[DEBUG] ' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
+debuggreen = lambda text: print(Fore.GREEN + '[DEBUG] ' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
+debugyellow = lambda text: print(Fore.YELLOW + '[DEBUG] ' +  text + ' ' + Style.RESET_ALL) if (DEBUG == True) else None
 debuglog     = lambda message: logger.debug(message) 
 infolog      = lambda message: logger.info(message)   
 warninglog   = lambda message: logger.warning(message) 

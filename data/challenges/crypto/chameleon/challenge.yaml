@@ -1,6 +1,7 @@
 version: beta1
 name: chameleon
 author: iagox86
+type: static
 flag: 'CTF{dont_hack_the_boat}'
 description: Somebody encrypted our flag and lost the key! Can you decrypt it? We've included the encryption utility, it should come in handy!
 value: 500

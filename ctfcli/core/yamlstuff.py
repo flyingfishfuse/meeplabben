@@ -1,6 +1,6 @@
 import yaml, os
 from pathlib import Path
-from ctfcli.utils.utils import errorlogger,greenprint
+from ctfcli.utils.utils import errorlogger,greenprint,debuggreen
 from yaml import safe_load,safe_dump
 
 class Yaml(): #filetype
@@ -35,10 +35,10 @@ class Yaml(): #filetype
         self.filepath = filepath
         self.directory = self.filepath.parent
         if self.filename.endswith(".yml"):
-            greenprint("[!] File is .yml! Presuming to be cluster configuration file!")
+            debuggreen(" File is .yml! Presuming to be cluster configuration file!")
             self.type = "kubernetes"
         elif self.filename.endswith(".yaml"):
-            greenprint("[!] Challenge File presumed (.yaml)")
+            debuggreen(" Challenge File presumed (.yaml)")
             self.type = "challenge"
         try:
             with open(filepath, 'r') as stream:

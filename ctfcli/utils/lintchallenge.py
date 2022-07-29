@@ -22,7 +22,7 @@ class Linter():
     def __init__(self,
                 #kwargs:dict,
                 togglevisibility=True):
-        debuggreen("[DEBUG] Creating Linter() Class")
+        debuggreen("Creating Linter() Class")
         self.jsonpayload = {}
         self.scorepayload = {}
         # the base repo has too few challenges to justify making any invisible
@@ -37,6 +37,9 @@ class Linter():
         #   will be attached to the challenge
         # - A solution/ folder with a working solution to the challenge (or a README.md
         #   file documenting the solution)
+        self.fields = ["name","category","description","scorepayload","flags","topics","tags",
+         "hints","requirements","max_attempts","notes","author","version","state",
+        "typeof"]
         self.name:dict = None
         self.category:dict = None
         self.description:dict = None
@@ -98,7 +101,7 @@ class Linter():
         >>> newchallenge = Challenge(**outputdict)
         """
         try:
-            debuggreen("[DEBUG] linting challenge yaml file")
+            debuggreen("linting challenge yaml file")
 
             #process required fields
             requirementsdict = self.extractrequired(dictfromyaml)
@@ -126,7 +129,7 @@ class Linter():
             dictfromyaml    (dict): dict to validate
             template        (dict): template to validate against
         """
-        debuggreen("[DEBUG] validating tags in linter")
+        debuggreen("validating tags in linter")
         # get the types allowed for that tag
         allowedtagtypes = template.get(tag)
         # get the tag contents and compare the two
@@ -140,7 +143,7 @@ class Linter():
         """
         Validates tag field types for required components of challenge.yaml
         """
-        debuggreen("[DEBUG] validating required tags in linter")
+        debuggreen("validating required tags in linter")
         #check if the challenge is MISSING any required tags!
         if type(dictfromyaml.get(tag)) not in self.requiredtagtypes:
             return False
@@ -152,7 +155,7 @@ class Linter():
         POPs all the required, thorws an exception if they arent present
         """
         try:
-            debuggreen("[DEBUG] extracting required tags in linter")
+            debuggreen("extracting required tags in linter")
             reqdict = {}
             # some challenges have no state assigned
             self._processstate(dictfromyaml)
@@ -175,7 +178,7 @@ class Linter():
     def extractoptional(self, optionaldict:dict):
         """
         """
-        debuggreen("[DEBUG] extracting optional tags in linter")
+        debuggreen("extracting optional tags in linter")
         self.optionalfields = ['author',"topics","hints","max_attempts",
                                "requirements",'notes', 'tags',
                                'scoreboard_name','files']
@@ -194,7 +197,7 @@ class Linter():
         
         """ 
         try:
-            debuggreen("[DEBUG] processing value in linter")
+            debuggreen("processing value in linter")
             tagdata = requirementsdict.pop('value')
             if (type(tagdata) != int):
                 redprint("[-] ERROR: Value field should be an integer, skipping challenge \n")
@@ -208,7 +211,7 @@ class Linter():
         """
         
         """
-        debuggreen("[DEBUG] processing score fields in linter")
+        debuggreen("processing score fields in linter")
         tagdata = requirementsdict.pop('type')
         if tagdata in ["static","standard","dynamic"]:
             self.typeof = {"typeof" : tagdata}
@@ -218,7 +221,7 @@ class Linter():
         
         """
         try:
-            debuggreen("[DEBUG] processing score fields in linter")
+            debuggreen("processing score fields in linter")
             #self.typeof = requirementsdict.pop('type')
             # dynamic challenges
             if self.typeof['typeof'] == 'dynamic':
@@ -245,7 +248,7 @@ class Linter():
         """
         Process state tag from challenge yaml file
         """
-        debuggreen("[DEBUG] processing visibility state in linter")
+        debuggreen("processing visibility state in linter")
         # check state field
         # we should set state to visible unless self.toggle is set to false
         # then we use the value in the yaml file
@@ -267,7 +270,7 @@ class Linter():
         """
         
         """
-        debuggreen("[DEBUG] processing name in linter")
+        debuggreen("processing name in linter")
         tagdata = requirementsdict.pop("name")
         self.name = {"name":tagdata}
 
@@ -275,25 +278,25 @@ class Linter():
         """
         
         """
-        debuggreen("[DEBUG] processing description in linter")
+        debuggreen("processing description in linter")
         if requirementsdict.get('description') != None:
             tagdata = requirementsdict.pop("description")
             self.description = {"description":tagdata}
         else:
-            debugred("[DEBUG] no Version tag in yaml")
+            debugred("no Version tag in yaml")
             self.description = {"description": "EMPTY NOT IN YAML"}
 
     def _processversion(self,requirementsdict):
         """
         
         """
-        debuggreen("[DEBUG] processing version in linter")
+        debuggreen("processing version in linter")
         if requirementsdict.get('version') != None:
             tagdata = requirementsdict.pop("version")
             self.version = {"version":tagdata}
         # if version is not present in the yaml file
         else:
-            debugred("[DEBUG] no Version tag in yaml")
+            debugred("no Version tag in yaml")
             self.version = {"version": "0.1"}
             #raise Exception
 
@@ -330,13 +333,13 @@ class Linter():
         """
         
         """
-        debuggreen("[DEBUG] processing category in linter")
+        debuggreen("processing category in linter")
         # dangly bit for future additions
         if requirementsdict.get("category") != None:
             tagdata = requirementsdict.pop("category")
             self.category = {"category": tagdata}
         else:
-            debugred("[DEBUG] no category tag in yaml")
+            debugred("no category tag in yaml")
             raise Exception
 
     def _processflags(self,requirementsdict:dict):
@@ -351,7 +354,7 @@ class Linter():
             }
         flagsdict = {}
         try:
-            debuggreen("[DEBUG] processing flags in linter")
+            debuggreen("processing flags in linter")
             try:
                 flagsdata = requirementsdict.pop("flags")
             except:
@@ -399,7 +402,7 @@ class Linter():
         """
         
         """
-        debuggreen("[DEBUG] processing tags in linter")
+        debuggreen("processing tags in linter")
         tagdata = optionaldict.pop("tags")
         self.tags = {"tags":tagdata}
 
@@ -407,7 +410,7 @@ class Linter():
         """
         
         """
-        debuggreen("[DEBUG] processing files in linter")
+        debuggreen("processing files in linter")
         tagdata = optionaldict.pop("files")
         self.files = {"files":tagdata}
 
@@ -423,7 +426,7 @@ class Linter():
         """
         
         """
-        debuggreen("[DEBUG] processing requirements in linter")
+        debuggreen("processing requirements in linter")
         tagdata = optionaldict.pop("requirements")
         self.requirements = {"requirements":tagdata}
 
@@ -431,15 +434,14 @@ class Linter():
         """
         
         """
-        debuggreen("[DEBUG] processing author in linter")
+        debuggreen("processing author in linter")
         tagdata = optionaldict.pop("author")
         self.author = {"author":tagdata}
-
     def _processnotes(self,optionaldict:dict):
         """
         
         """
-        debuggreen("[DEBUG] processing notes in linter")
+        debuggreen("processing notes in linter")
         tagdata = optionaldict.pop("notes")
         self.notes = {"notes":tagdata}
 
@@ -474,13 +476,13 @@ class Linter():
             #for tag in self.requiredfields:
             for tag in requirementsdict.copy():
                 length = len(requirementsdict)
-                debuggreen(f"[DEBUG] requirementsdict length {length} ")
+                debuggreen(f"requirementsdict length {length} ")
                 if (length == 0):
                     break
                     #continue
                 elif (length > 0):
                     tagdata = requirementsdict.get(tag)
-                    debuggreen(f"[DEBUG] processing tag  {tag} : {tagdata} ")
+                    debuggreen(f"processing tag  {tag} : {tagdata} ")
                     # type determines score and currently the only field 
                     # requiring extra values for certain tags
                     if tag =='value':
@@ -506,13 +508,13 @@ class Linter():
         try:
             for tag in optionaldict.copy():
                 length = len(optionaldict)
-                debuggreen(f"[DEBUG] requirementsdict length {length} ")
+                debuggreen(f"requirementsdict length {length} ")
                 if (length == 0):
                     break
                     #continue
                 elif (length > 0):
                     tagdata = optionaldict.get(tag)
-                    debuggreen(f"[DEBUG] processing tag  {tag} : {tagdata} ")
+                    debuggreen(f"processing tag  {tag} : {tagdata} ")
                     #if tag == 'state':
                         #self._processstate(optionaldict)
                     if tag == 'author':
@@ -538,31 +540,15 @@ class Linter():
                         pass
         except Exception:
             errorlogger(f"[-] ERROR: tag data not valid: {tag}")
-    
+
     def setpayload(self):
-        debuggreen("[DEBUG] Setting payload in linter ")
-        # set base challenge payload
-        templatelist = [self.name,
-                        self.category,
-                        self.description,
-                        self.scorepayload,
-                        self.flags ,
-                        self.topics,
-                        self.tags,
-                        #self.files,
-                        self.hints,
-                        self.requirements,
-                        self.max_attempts,
-                        self.notes,
-                        self.author,
-                        self.version,
-                        self.state,
-                        self.typeof,
-                        ]
-        #print(templatelist)
-        asdf = [thing for thing in templatelist if thing != None]
-        print(asdf)
-        for yamltag in asdf:
+        '''
+        set base challenge payload
+        
+        '''
+        debuggreen("Setting payload in linter ")
+        templatelist = [ getattr(self,field,None) for field in getattr(self,"fields")]
+        for yamltag in templatelist:
             if yamltag != None:
                 self.jsonpayload.update(yamltag)
 

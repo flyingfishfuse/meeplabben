@@ -10,6 +10,7 @@
 version: beta1
 name: eccmul
 author: symmetric
+type: static
 flag: 'CTF{babys_first_scalar_multiplication}'
 description: 'Never done ECC before? Now you can!'
 value: 500

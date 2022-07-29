@@ -115,7 +115,7 @@ class SandboxyCTFdRepository():
 				folderscanresults = self._processfoldercontents(challengefolderpath)
 				if folderscanresults["type"] == "deployment":
 					self._createdeployment(folderscanresults)
-				elif folderscanresults["type"] == "challlenge":
+				elif folderscanresults["type"] == "challenge":
 					# create Challenge based off those
 					newchallenge = self._createchallenge(folderscanresults)
 
@@ -128,15 +128,22 @@ class SandboxyCTFdRepository():
 				continue
 		return category
 
-	def _check_for_deployment(self,directory:Path)->bool:
+	def _check_for_deployment(self,folder_path:Path)->bool:
 		'''
 		Checks if challenge is a deployed challenge, if not, performs better validation
 		in the next step
 		
 		'''
+		# just because?
+		if not folder_path:
+			directory = self.folder_being_scanned
+		else:
+			directory = folder_path
+
 		expanded_list = {name.stem:name for name in directory.iterdir()}
 		if "deployment" in expanded_list and expanded_list["deployment"].is_dir():
 			# set challenge type
+			debugyellow("Deployment Folder Found, processing deployment files")
 			self.challengetype = "deployment"
 			# validate contents
 			self.processdeploymentfolder(expanded_list["deployment"])
@@ -173,30 +180,38 @@ class SandboxyCTFdRepository():
 						#"README"
 						]
 		validationlistlength = len(validationlist)
+
 		try:
-			for item in folder_path.iterdir():
-				# if its in the list
-				if item.stem in validationlist:
-					# let the truthyness variable be set/remain as true
-					truthyness = True
-					debuggreen(f"Found Valid Item {item.name}")
-					valid_items.append(item)
+			if not folder_path:
+				directory = self.folder_being_scanned
+			else:
+				directory = folder_path
 
-					if item.stem == "handout":
-						self._package_handout(item)
-					
-					if item.stem == "solution":
-						self._package_solution(item)
+			for item in directory.iterdir():
+					# if its in the list
+					if item.stem in validationlist:
+						# let the truthyness variable be set/remain as true
+						truthyness = True
+						debuggreen(f"Found Valid Item {item.name}")
+						valid_items.append(item)
 
-					# validate the challenge yaml
-					if item.stem == "challenge" and item.is_file():
-						self.yaml_contents = self.lint_challenge_yaml(item)
+						if item.stem == "handout":
+							self._package_handout(item)
 
-				if item.stem not in validationlist:
-					debugyellow(f"[-] Found Extraneous item in challenge folder : {item.name} \n\
-								  [-] This does not conform to specification for a challenge folder")
+						if item.stem == "solution":
+							self._package_solution(item)
 
-			
+						# validate the challenge yaml
+						if item.stem == "challenge" and item.is_file():
+							self.yaml_contents = self.lint_challenge_yaml(item)
+
+					elif item.stem not in validationlist:
+						debugyellow(f"[-] Found Extraneous item in challenge folder : {item.name} \n\
+									  [-] This does not conform to specification for a challenge folder")
+					else:
+						errorlogger("[-] ERROR! unecpected condition in _check_for_standard(), check the logfile ")
+						raise Exception
+
 			self.challengetype = "challenge"
 			debuggreen("All Required files have been found in the specified folder")
 		except:
@@ -226,7 +241,7 @@ class SandboxyCTFdRepository():
 		#since it should only EVER be in a direct subfolder of a category folder
 		# the except should NEVER be triggered so if it IS
 		# SOMETHING is HORRIBLY wrong
-		challengeyaml["category"] = path_to_yaml.parent.parent
+		challengeyaml["category"] = path_to_yaml.parent.parent.stem
 
 		# begin linting the file
 		try:
@@ -260,23 +275,25 @@ class SandboxyCTFdRepository():
 		>>>	}
 
 		"""
+		# allowance for commandline usage of follow up functions
+		self.folder_being_scanned = folderpath
 		#######################################################################
 		# VALIDATION OF INDIVIDUAL CHALLENGES
 		#######################################################################
 		#extract the category name for shitty hack
-		self.category = folderpath.parent.stem
+		self.category = self.folder_being_scanned.parent.stem
 		#====================================================================
 		#   DEPLOYMENT PROCESSING
 		#
 		#====================================================================
 		#if self.check_for_deployment(challengedirlist):
-		if self._check_for_deployment(folderpath):
+		if self._check_for_deployment(self.folder_being_scanned):
 			debuggreen("Deployment Challenge Processed successfully")
 		else:
 		#====================================================================
 		#  NON-DEPLOYMENT PROCESSING
 		#====================================================================
-			self._check_for_standard(folderpath)
+			self._check_for_standard(self.folder_being_scanned)
 
 		#######################################################################
 
@@ -288,16 +305,18 @@ class SandboxyCTFdRepository():
 		final step in validation, collates data into dict for feeding
 		the Deployment() or Challenge() initializers
 		'''
-		folderscanresults = {
-			"category": self.category,
-			"type":self.challengetype,
-			"yaml":self.yaml_contents,
-			"folderdata" : {
-				#"service":"",
-				"handout":self.handout, 
-				"solution": self.solution
+		try:
+			folderscanresults = {
+				"category": self.category,
+				"type":self.challengetype,
+				"yaml":self.yaml_contents,
+				"folderdata" : {
+					"handout":getattr(self,"handout", None),
+					"solution": getattr(self,"solution",None)
+				}
 			}
-		}
+		except Exception:
+			errorlogger("[-] Failed to package challenge")
 
 		# if its a deployed challenge, append the deployment folder to the dict
 		if self.challengetype == "deployment":
@@ -310,14 +329,16 @@ class SandboxyCTFdRepository():
 		Processes the contents of a deployment folder, inside a challenge folder 
 		 Extracts the path of the dockerfile and deployment.yaml
 		'''
-		list_of_deployment_folder_files = getsubfiles(folderpath)
+		list_of_deployment_folder_files = [item.name for item in folderpath.iterdir() if item.is_file()]
+		
+		#list_of_deployment_folder_files = getsubfiles(folderpath)
 		if "Dockerfile" not in list_of_deployment_folder_files:
 			errorlogger("[-] Dockerfile not found! Skipping this folder!")
 			raise Exception
-		if "deployment.yaml" not in list_of_deployment_folder_files:
+		if "deployment.yml" not in list_of_deployment_folder_files:
 			errorlogger("[-] deployment.yaml not found! Skipping this folder!")
 			raise Exception
-		if "service.yaml" not in list_of_deployment_folder_files:
+		if "service.yml" not in list_of_deployment_folder_files:
 			errorlogger("[-] service.yaml not found! Skipping this folder!")
 			raise Exception
 
