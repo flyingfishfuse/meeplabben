@@ -72,13 +72,3 @@ class MasterFile(Yaml):
         cls.tag = '!Masterlist'
         return super(cls).__new__(cls, *args, **kwargs)
 
-class KubernetesYaml(Yaml): #file
-    """
-    Represents a Kubernetes specification
-    future
-    """
-    def __new__(cls,*args, **kwargs):
-        cls.__name__ = 'deployment'
-        cls.__qualname__= cls.__name__
-        cls.tag = '!deployment'
-        return super(cls).__new__(cls, *args, **kwargs)

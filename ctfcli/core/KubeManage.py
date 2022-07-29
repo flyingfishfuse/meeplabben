@@ -11,23 +11,18 @@ from docker import client
 from hashlib import sha1
 import kubernetes
 
-global DEBUG
-DEBUG = True
-
-
-class KubernetesYaml(Yaml): #file
-    """
-    Represents a Kubernetes specification
-    future
-    """
+class SpecFile:
+    '''
+    Metaclass for loading yml files into
+    '''
     def __new__(cls,*args, **kwargs):
-        cls.__name__ = 'deployment'
+        cls.__name__ = 'service'
         cls.__qualname__= cls.__name__
-        cls.tag = '!deployment'
+        cls.tag = '!service'
         return super(cls).__new__(cls, *args, **kwargs)
     
     def __init__(self,**entries): 
-        print("[+] Generating new repository")
+        print("[+] Creating Service.yaml python code")
         self.__dict__.update(entries)
     
     def __repr__(self):
@@ -38,6 +33,15 @@ class KubernetesYaml(Yaml): #file
             wat.append(str(key) + " : " + str(self.__dict__[key]))
         #return self_repr
         return wat
+
+class KubernetesYaml(SpecFile): #file
+    """
+    Represents a Kubernetes specification
+    future
+    """    
+    def __init__(self): 
+        print("[+] Generating new repository")
+
 
 class HelmManagment():
     def __init__(self):

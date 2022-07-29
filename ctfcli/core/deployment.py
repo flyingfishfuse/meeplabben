@@ -1,6 +1,7 @@
+from ctfcli.ClassConstructor import Yaml
 from ctfcli.utils.utils import infolog,errorlogger,greenprint,redprint,yellowboldprint
 from ctfcli.utils.utils import getsubfiles_dict,getsubdirs,file_to_text
-from ctfcli.core.yamlstuff import Yaml,KubernetesYaml
+from ctfcli.core.KubeManage import SpecFile
 
 import os
 from pathlib import Path
@@ -75,14 +76,14 @@ class Deployment():
 		If the files are changed on disk they must be updated in the masterlist
 		Use this function to do that
 		'''
-		self.parse_service_yaml(self.service_yaml_path)
-		self.parse_dockerfile(self.dockerfile_path)
-		self.parse_deployment_yaml(self.deployment_yaml_path)
+		self._parse_service_yaml(self.service_yaml_path)
+		self._parse_dockerfile(self.dockerfile_path)
+		self._parse_deployment_yaml(self.deployment_yaml_path)
 
 ###############################################################################
 #   SERVICE YAML PROCESSING
 ###############################################################################
-	def parse_service_yaml(self,service_yaml_path):
+	def _parse_service_yaml(self,service_yaml_path):
 		'''
 		Gets the string representation of a service.yml file and
 		attach it to the Deployment object as text.
@@ -96,6 +97,8 @@ class Deployment():
 
 		'''
 		self.service_yaml_text = file_to_text(self.service_yaml_path)
+		self.service_yaml = Yaml(self.service_yaml_path)
+		self.service_yaml = SpecFile(**self.service_yaml.loadyaml())
 
 	def service_yaml(self):
 		'''
@@ -106,7 +109,7 @@ class Deployment():
 ###############################################################################
 #  DOCKERFILE PROCESSING
 ###############################################################################
-	def parse_dockerfile(self, dockerfile_path:Path)-> str:
+	def _parse_dockerfile(self, dockerfile_path:Path)-> str:
 		'''
 		Gets the string representation of a dockerfile and
 		attach it to the Deployment object as text.
@@ -130,7 +133,7 @@ class Deployment():
 #   DEPLOYMENT YAML PROCESSING
 ###############################################################################
 
-	def parse_deployment_yaml(self, deployment_yaml_path:Path):
+	def _parse_deployment_yaml(self, deployment_yaml_path:Path):
 		'''
 		Gets the string representation of a dockerfile and
 		attach it to the Deployment object as text.

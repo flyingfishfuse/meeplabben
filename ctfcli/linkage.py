@@ -110,8 +110,11 @@ class SandBoxyCTFdLinkage():
 			masterlist = Masterlist()
 			# write the masterlist with all the repo data to disk
 			masterlist._writenewmasterlist(self.masterlistlocation,repository,filemode="w")
-			# read masterlist to verify it was saved properly
-			repositoryobject = masterlist._loadmasterlist(self.masterlistlocation)
+			try:
+				# read masterlist to verify it was saved properly
+				repositoryobject = masterlist._loadmasterlist(self.masterlistlocation)
+			except:
+				errorlogger("[-] FAILED to load masterlist after creation, something may be wrong, run init again")
 			#assigns repository to self for use in 
 			# case the user started in interactive mode
 			#self.repo = repositoryobject

@@ -26,6 +26,7 @@ class Masterlist():
         Args:
             masterlistfile (str): The file to load as masterlist, defaults to masterlist.yaml
         """
+        greenprint("[+] Loading masterlist from disk")
         tag = "!Repo:"
         try:
             workcrew = Constructor()
