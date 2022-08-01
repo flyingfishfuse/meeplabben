@@ -1,8 +1,6 @@
 import os, sys
 import yaml
 from pathlib import Path
-from ctfcli.core.deployment import Deployment
-
 
 from ctfcli.utils.config import Config
 from ctfcli.utils.utils import errorlogger, greenprint,redprint,yellowboldprint,debuggreen
@@ -14,8 +12,6 @@ import kubernetes
 import select
 import socket
 import time
-
-import six.moves.urllib.request as urllib_request
 
 from kubernetes import config
 from kubernetes.client import Configuration
@@ -156,13 +152,6 @@ class KubernetesManagment():
             time.sleep(1)
         greenprint("[+] Pod deployed")
 
-    def deployment_to_pod(self, deployed_challenge:Deployment):
-        '''
-        deploys a pod based on a Deployment() class, rather than the yml file representing it
-        This same function also exists in the Deployment class itself to allow deployment as its created   
-        '''
-        self.deploy_pod_from_json(deployed_challenge.deployment_yaml_json)
-    
     def get_ports_in_use(self):
         '''
         gets ports being used on HOST SERVER by kubernetes
