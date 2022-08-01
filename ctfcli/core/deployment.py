@@ -1,7 +1,10 @@
+
+from ctfcli.core.challenge import Challenge
 from ctfcli.ClassConstructor import Yaml
+
 from ctfcli.utils.utils import infolog,errorlogger,greenprint,redprint,yellowboldprint
 from ctfcli.utils.utils import getsubfiles_dict,getsubdirs,file_to_text
-from ctfcli.core.KubeManage import SpecFile
+from ctfcli.core.KubeManage import SpecFile,Dockerfile,KubernetesManagment
 
 import os
 from pathlib import Path
@@ -11,17 +14,20 @@ from hashlib import sha1
 from kubernetes import client, config, watch
 import docker,yaml
 
-class Deployment():
+class Deployment(Challenge):
 	"""
 	Base Class for all the attributes required on both the CTFd side and Repository side
 	Represents the challenge.yml as exists in the folder for that specific challenge
 
-	Represents a Challenge Folder
+	Represents a DEPLOYMENT Challenge Folder
 	
-	Contents of a Challenge Folder:
+	Contents of a DEPLOYMENT Challenge Folder:
 		handouts: File or Folder
 		solution: File or Folder 
 		challenge.yaml
+
+		AND:
+			deployment folder containing a deployment.yml , service.yml and Dockerfile
 
 	Args:
 		yamlfile		(Path): filepath of challenge.yaml
@@ -42,17 +48,6 @@ class Deployment():
 		self.category = category
 		self.solution = solution
 		self.handout  = handout
-
-		 # here, we deviate from the challenge class and include
-		 # deployment and service yaml files
-
-		self.process_deployment_folder()
-
-		self.process_deployment_files()
-		
-		 
-		#self.service = service
-
 		# this is set after syncing by the ctfd server, it increments by one per
 		# challenge upload so it's predictable
 		self.id = int
@@ -121,7 +116,8 @@ class Deployment():
 		>>> deployed_challenge.dockerfile_text()
 			... dockerfile contents ...
 		'''
-		self.dockerfile_text = file_to_text(dockerfile_path)
+		dockerfile_text = file_to_text(dockerfile_path)
+		self.dockerfile = Dockerfile(dockerfile_text)
 
 	def dockerfile(self):
 		'''
@@ -146,6 +142,7 @@ class Deployment():
 			... deployment.yaml contents ... 
 		'''
 		self.deployment_yaml_text = file_to_text(self.deployment_yaml_path)
+		self.deployment_yaml_json = Yaml.loadyaml(deployment_yaml_path)
 
 	def deployment_yaml(self):
 		'''
@@ -183,6 +180,7 @@ class Deployment():
 
 		self.jsonpayload = {}
 		self.scorepayload = {}
+		
 		# we have everything preprocessed
 		for each in kwargs:
 			setattr(self,each,kwargs.get(each))
@@ -191,3 +189,53 @@ class Deployment():
 		self.__name = self.internalname
 		self.__qualname__ = self.internalname
 		yellowboldprint(f'[+] Internal name: {self.internalname}')
+		
+		# here, we deviate from the challenge class and include
+		# deployment and service yaml files
+
+		self.process_deployment_folder()
+
+		self.process_deployment_files()
+
+
+###############################################################################
+#  Deployment container functions
+# The following code uses the KubeManage() class attributes and member functions
+# to perform the work. NONE of the code for ANYTHING container related must be 
+# placed here!
+# THE DEPLOYMENT CLASS IS CLEANLY SEPARATE FROM THE DEPLOYMENT CODE
+# despite the name, it is simply an extension of the challenge class
+###############################################################################
+	def push_to_registry(self):
+		'''
+		
+		'''
+
+	def pull_from_registry(self):
+		'''
+		to lower overhead this method can be used
+		Not strictly necessary but often, people do not have the hardware
+		capabilities to perform cloud computing at home
+		'''
+
+	def reload_from_registry(self):
+		'''
+		Reloads the container data from the registry, This essentially 
+		forces a rewrite of data on disk with fresh copies from the registry
+		'''
+	
+	def start_container(self):
+		'''
+		Starts the container
+		'''
+		KubernetesManagment.deploy_pod_from_json(self.deployment_yaml_json)
+		
+	def restart_container(self):
+		'''
+		forces a hot restart of the container
+		'''
+
+	def stop_container(self):
+		'''
+		
+		'''

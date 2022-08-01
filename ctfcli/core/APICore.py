@@ -80,6 +80,10 @@ class APICore(Session):
 	        "_submit": "Submit",
 	        "nonce": str #"84e85c763320742797291198b9d52cf6c82d89f120e2551eb7bf951d44663977"
         }
+        cls.port_forward_template = {
+            "namespace":"",
+            "port":""
+        }
     def _setauth(self):
         """
         Sets authorization headers with token

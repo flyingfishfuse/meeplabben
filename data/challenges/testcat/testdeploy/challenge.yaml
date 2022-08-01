@@ -1,0 +1,29 @@
+version: '0.1'
+name: exec(print("you got haxed"))
+scoreboard_name: test
+author: exec(print("you got haxed"))
+flags: 
+  - CTF{multi}
+  - CTF{flag}
+  - CTF{test}
+description: testing shit
+type: dynamic
+value: 500
+extra:
+  initial: 500
+  decay: 50
+  minimum: 50
+tags:
+  - exec(print("you got haxed"))
+  - easy
+
+replicas: 2
+containers:
+  server:
+    build: .
+    ports:
+      - containerPort: 8000
+
+expose:
+- containerPort: 8000
+  nodePort: 8080
