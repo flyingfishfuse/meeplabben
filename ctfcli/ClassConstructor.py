@@ -157,12 +157,12 @@ class Constructor():
 
 	def _writeyaml(self,filepath, pythoncode, classtype,filemode="w"):
 		"""
-		Creates a New file
-		remember to assign data to the file with
-		
+		Creates a New file\n
+		remember to assign data to the file with\n
+		\n
 		>>> thing = yamlconstructor(filepath)
 		>>> thing._writenewstorage(pythoncodeobject)
-
+		\n
 		Args: 
 			pythoncode (Object): an instance of a python object to transform to YAML
 			filemode (str) : File Mode To open File with. set to append by default

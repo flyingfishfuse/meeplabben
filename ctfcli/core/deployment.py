@@ -4,7 +4,7 @@ from ctfcli.ClassConstructor import Yaml
 
 from ctfcli.utils.utils import infolog,errorlogger,greenprint,redprint,yellowboldprint
 from ctfcli.utils.utils import getsubfiles_dict,getsubdirs,file_to_text
-from ctfcli.core.KubeManage import SpecFile,Dockerfile,KubernetesManagment
+from ctfcli.Kubemanage.KubeManage import SpecFile,Dockerfile,KubernetesManagment
 
 import os
 from pathlib import Path
