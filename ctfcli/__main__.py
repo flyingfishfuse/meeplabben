@@ -1,16 +1,18 @@
 import os,sys,fire
 sys.path.insert(0, os.path.abspath('.'))
-#from ctfcli.utils.config import Config
 from pathlib import Path
+
+#---
+from ctfcli.utils.utils import DEBUG
 from ctfcli.utils.utils import errorlogger, yellowboldprint,greenprint,redprint
 from ctfcli.utils.utils import debugblue,debuggreen,debugyellow
+#---
 from ctfcli.utils.config import Config
 from ctfcli.linkage import SandBoxyCTFdLinkage
 from ctfcli.core.gitrepo import SandboxyGitRepository
 #from ctfcli.PyKCTF.kctf import ClusterHandler
 ###############################################################################
-from ctfcli.utils.utils import DEBUG
-###############################################################################
+
 class Ctfcli():
 	'''
 		Proper Usage is as follows
@@ -83,6 +85,8 @@ class Ctfcli():
  			"KUBECONFIGPATH",
 		]
 		# modify the structure of the program here by reassigning classes
+		if DEBUG == True:
+			debugyellow("setting  env")
 		self._setenv()
 
 		#establish the linkage between meeplabben and the cli
@@ -90,6 +94,8 @@ class Ctfcli():
 		# is initialized
 
 		# this item is a function in the menu, allowing you to call functions on the class
+		if DEBUG == True:
+			debugyellow("creating linkage class")
 		self.ctfrepo = SandBoxyCTFdLinkage(
 								challenges_folder=self._challengesfolder,
 								masterlistlocation=self.masterlist,
@@ -136,6 +142,8 @@ class Ctfcli():
 		Sets the config file to self
 		'''
 		# bring in config functions
+		if DEBUG == True:
+			debugyellow("creating config class")
 		self.config = Config(self.configfile)
 
 	def _getenv(self):
@@ -143,11 +151,15 @@ class Ctfcli():
 		Retrieves neceessary env vars if running in submodule mode
 		all variables should be a Path to a location nearby
 		'''
-		debugyellow("Loading the following variables from the shell environment")
+		if DEBUG == True:
+			debugyellow("Loading the following variables from the shell environment")
 		for var_name in self.important_env_list:
-			debugblue(var_name)
+			if DEBUG == True:
+				debugblue(var_name)
 		for each in self.important_env_list:
-			debugyellow(f"SETTING {each} as {os.getenv(each)}")
+			if DEBUG == True:
+				debugyellow("setting  env")
+				debugyellow(f"SETTING {each} as {os.getenv(each)}")
 			setattr(self,each, Path(os.getenv(each)))
 
 	def run_standalone(self):
@@ -156,6 +168,8 @@ class Ctfcli():
 		to handle context switching between standalone tool usage with external repo \n
 		and internal usage with built in repository
 		'''
+		if DEBUG == True:
+			debugyellow("running in standalone mode")
 		try:
 			# set var to indicate folder hierarchy
 			onelevelup = self._toolfolder.parent
@@ -182,6 +196,8 @@ class Ctfcli():
 		# PROJECT_ROOT has already been set
 		# so has other variables
 		# get the env vars for the module
+		if DEBUG == True:
+			debugyellow("running in submodule mode")
 		self._getenv()
 		yellowboldprint(f"[+] Project root ENV variable is {self.PROJECT_ROOT}")
 

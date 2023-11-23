@@ -58,7 +58,7 @@ os.environ["PROJECT_ROOT"] = str(PROJECT_ROOT.absolute())
 #os.putenv("PROJECT_ROOT",str(PROJECT_ROOT.absolute()))
 
 global CHALLENGEREPOROOT
-CHALLENGEREPOROOT=Path(PROJECT_ROOT,'data','challenges')
+CHALLENGEREPOROOT=Path(PROJECT_ROOT,'challenges')# ,'data','challenges')
 os.environ["CHALLENGEREPOROOT"] = str(CHALLENGEREPOROOT.absolute())
 #os.putenv("CHALLENGEREPOROOT",str(CHALLENGEREPOROOT.absolute()))
 

@@ -35,6 +35,8 @@ setup(
         "requests==2.22.0",
         "colorama==0.4.3",
         "gitpython",
+        "kubernetes",
+        "docker"
     ],
     packages=find_packages(),
     include_package_data=True,

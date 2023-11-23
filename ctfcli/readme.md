@@ -1,5 +1,14 @@
 This tool 
 
+I just forked the ctfcli repo to start reviewing the changes I can implement but the structure of the rewrite required some engineering changes, I need you to review the changes that I made for my own project to choose what should be merged. The rewrite is in the repository "flyingfishfuse/ctf_repository_manager" in the "ctfcli" folder.
+
+I see you just started refactoring to a more OOP approach which is what I did. I wanted it to be modular and extensible. The documentation needs more work but it's mostly done. I am going to be spending the next few days reading the newest version of ctfcli to see how the structure changed. My version is explained in the readme of the main folder.... I *think* it works still but I may have made a few changes without testing when everything was hectic in my personal life.
+
+I stopped coding for a while to focus on other areas of my life but I am needing to get back in to the game. 
+
+The most important changes is the challenges repository MUST fit a SPECIFIC form, and the challenge.yaml MUST conform to the specification or it will be denied. I have reformatted a total of two years worth of challenges meant for the ctfd platform as an example. I am sure a script could be written to reformat other challenge repositories. 
+The software also creates a "masterlist" consisting of python->yaml of the challenge repo that can be loaded into the tool.
+
 #### Necessary Packages
 
     gitpython, docker-compose, python-docker, fire, cookiecutter
