@@ -171,6 +171,9 @@ class Ctfcli():
 		if DEBUG == True:
 			debugyellow("running in standalone mode")
 		try:
+	#################################################################
+	# Setting location of challenges folder
+	#################################################################
 			# set var to indicate folder hierarchy
 			onelevelup = self._toolfolder.parent
 			if DEBUG == True:
@@ -202,7 +205,31 @@ class Ctfcli():
 				raise Exception
 		except Exception:
 			errorlogger("[-] Error, cannot find repository! ")
-	
+	#################################################################
+	# Setting location of masterlist
+	#################################################################
+		try:
+			# location of the all important masterlist
+			# # ~/meeplabben/data/masterlist.yaml
+			self.masterlist = Path(self._reporoot, "masterlist.yaml")
+			yellowboldprint(f'[+] Masterlist is expected to be at {self.masterlist}')
+		except Exception:
+			errorlogger("[-] failed to set masterlist location")
+	#################################################################
+	# Setting location of config file
+	#################################################################
+		try:	
+			# location of the config file
+			# ~/meeplabben/config.cfg
+			self.configfile = Path(self._reporoot, "config.cfg")
+			yellowboldprint(f'[+] Config File is expected to be at {self.configfile}')
+
+			# bring in config functions
+			self.config = Config(self.configfile)
+			self.set_config()
+		except Exception:
+			errorlogger("[-] Failed to set location of config file")
+
 	def run_as_submodule(self):
 		'''
 		init procedure for running as a submodule of meeplabben \n
@@ -268,7 +295,10 @@ class Ctfcli():
 		# not being run standalone
 		# i.e. this tool is being used in the meeplabben environment
 		else:
-			self.run_as_submodule()
+			#self.run_as_submodule()
+			if DEBUG == True:
+				debugyellow("Attempting to run in submodule mode, something is wrong")
+			raise RuntimeError
 
 def main():
    fire.Fire(Ctfcli)
