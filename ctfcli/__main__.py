@@ -173,13 +173,30 @@ class Ctfcli():
 		try:
 			# set var to indicate folder hierarchy
 			onelevelup = self._toolfolder.parent
+			if DEBUG == True:
+				debugyellow(f" one folder up : {onelevelup}")
 			# if a folder named challenges is in the directory next to this one
-			if os.path.isdir(os.listdir(onelevelup).get('challenges')):
-				yellowboldprint("[+] Challenge Folder Found alongside tool folder, presuming to be repository location")
-				# set var to challenge folder location
-				self._challengesfolder = os.path.join(onelevelup, "challenges")
-				# set var to repository root
-				self._reporoot = onelevelup
+			for item in os.listdir(onelevelup):
+				# found folder
+				if DEBUG == True:
+					debugyellow(f"itterating - directory listing item: {item}")
+				if os.path.isdir(item) and item == "challenges":
+					yellowboldprint("[+] Challenge Folder Found alongside tool folder, presuming to be repository location")
+					# set var to challenge folder location
+					self._challengesfolder = os.path.join(onelevelup, "challenges")
+					# set var to repository root
+					self._reporoot = onelevelup
+					if DEBUG == True:
+						debuggreen(f"challenges folder at {self._challengesfolder}")
+						debuggreen(f"repository root folder at {self._reporoot}")
+					break
+				# not the droid/folder we are looking for
+				elif (os.path.isdir(item) and item != "challenges"):
+					continue
+				# not even a droid/folder
+				elif not os.path.isdir(item):
+					continue
+			# folder one level up is empty?
 			else:
 				yellowboldprint("[!] Challenge folder not found Alongside tool folder, Exiting program!")
 				raise Exception
@@ -192,6 +209,10 @@ class Ctfcli():
 		to handle context switching between standalone tool usage with external repo \n
 		and internal usage with built in repository
 
+		THIS MODE OF OPERATION SHOULD NOT BE USED UNTIL CLUSTER BOOTSTRAP PROCEDURES
+		ARE FULLY COMPLETE!
+
+		USE STANDALONE WITH CTDF SOFTWARE MANUALLY INSTALLED UNTIL THEN!
 		'''
 		# PROJECT_ROOT has already been set
 		# so has other variables
